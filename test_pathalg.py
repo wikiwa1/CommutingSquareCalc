@@ -1,0 +1,457 @@
+"""Test suite for :mod:`pathalg`.
+
+Run with ``python test_pathalg.py`` (no pytest needed), or ``python
+test_pathalg.py --slow`` to include the exact-arithmetic cases that take
+minutes.
+
+The interesting tests are the ones with an *external* answer:
+
+* ``test_dynkin_biunitarity`` -- Ocneanu's published connection on ``A_n``
+  satisfies both unitarity and bi-unitarity as this library computes them,
+  which independently pins down the renormalisation convention.
+* ``test_hadamard_higher_relative_commutants`` -- the spin model of the Fourier
+  matrix ``F_N`` is the ``Z/N`` group-subfactor commuting square, whose higher
+  relative commutants have dimensions ``1, N, N^2, ...``.
+* ``test_dynkin_higher_relative_commutants`` -- for the flat ``A_n``
+  connection, ``dim A_{0,1}' cap A_{n,0}`` is the number of closed walks of
+  length ``2n`` at the endpoint of the Dynkin diagram.
+
+The rest are internal consistency: the cheap relative-commutant basis against a
+brute force linear solve, ``W`` unitary, the Markov trace, the Jones relations,
+the commuting square condition, and generation.
+"""
+
+from __future__ import annotations
+
+import sys
+import time
+import traceback
+
+import sympy as sp
+
+from pathalg import CommutingSquare, Level, Op, pf_bipartite
+from pathalg.examples import dynkin_A, fourier_matrix, hadamard, path_graph_bipartition
+
+SLOW = "--slow" in sys.argv
+
+_FAILURES = []
+_RUN = 0
+
+
+def check(cond, msg):
+    if not cond:
+        raise AssertionError(msg)
+
+
+def run(fn):
+    global _RUN
+    _RUN += 1
+    t = time.time()
+    try:
+        fn()
+        print(f"  ok    {fn.__name__:46s} {time.time() - t:6.1f}s", flush=True)
+    except Exception as exc:  # noqa: BLE001
+        _FAILURES.append((fn.__name__, exc, traceback.format_exc()))
+        print(f"  FAIL  {fn.__name__:46s} {time.time() - t:6.1f}s  {exc}", flush=True)
+
+
+# --------------------------------------------------------------------- weights
+
+
+def test_pf_weights():
+    cases = {
+        "A3": (sp.Matrix([[1], [1]]), sp.sqrt(2)),
+        "A4": (sp.Matrix([[1, 0], [1, 1]]), (1 + sp.sqrt(5)) / 2),
+        "A5": (sp.Matrix([[1, 0], [1, 1], [0, 1]]), sp.sqrt(3)),
+        "E6": (sp.Matrix([[1, 0, 0], [1, 1, 1], [0, 1, 0]]), None),
+        "E8": (sp.Matrix([[1, 0, 0, 0], [1, 1, 0, 1], [0, 1, 1, 0], [0, 0, 1, 0]]), None),
+    }
+    for name, (L, expected) in cases.items():
+        beta, mu_r, mu_c = pf_bipartite(L)
+        if expected is not None:
+            check(
+                sp.simplify(beta - expected) == 0,
+                f"{name}: graph norm {beta} != {expected}",
+            )
+        r, c = sp.Matrix(mu_r), sp.Matrix(mu_c)
+        check(
+            sp.simplify(sp.expand(L * c - beta * r)) == sp.zeros(L.rows, 1),
+            f"{name}: L mu_col != beta mu_row",
+        )
+        check(
+            sp.simplify(sp.expand(L.T * r - beta * c)) == sp.zeros(L.cols, 1),
+            f"{name}: L^T mu_row != beta mu_col",
+        )
+        check(all(sp.N(x) > 0 for x in mu_r + mu_c), f"{name}: weights not positive")
+
+
+def test_pf_weights_single_field():
+    """Every weight must be written over one number field, or zero tests break."""
+    L = sp.Matrix([[1, 0, 0], [1, 1, 0], [0, 1, 1], [0, 1, 0]])  # D6
+    beta, mu_r, mu_c = pf_bipartite(L)
+    gens = set()
+    for x in [beta] + mu_r + mu_c:
+        gens |= sp.sympify(x).atoms(sp.CRootOf)
+    check(len(gens) <= 1, f"D6 weights span {len(gens)} different CRootOf generators")
+
+
+# ------------------------------------------------------------- the connections
+
+
+def test_dynkin_biunitarity():
+    """Ocneanu's A_n connection is unitary *and* bi-unitary as computed here."""
+    for n in (3, 4, 5):
+        sq = dynkin_A(n)
+        for res in (sq.check_inclusion_matrices(), sq.check_weights(),
+                    sq.check_unitarity(), sq.check_biunitarity()):
+            check(res.ok, f"A_{n}: {res!r}")
+
+
+def test_dynkin_other_sign():
+    """The conjugate connection (sign = -1) is bi-unitary too."""
+    sq = dynkin_A(3, sign=-1)
+    check(sq.check_unitarity().ok, "A_3 (sign -1): u not unitary")
+    check(sq.check_biunitarity().ok, "A_3 (sign -1): v not unitary")
+
+
+def test_hadamard_biunitarity():
+    for N in (2, 3, 4):
+        sq = hadamard(fourier_matrix(N))
+        check(sq.check_unitarity().ok, f"F_{N}: u not unitary")
+        check(sq.check_biunitarity().ok, f"F_{N}: v not unitary")
+        check(
+            sp.simplify(sq.beta_h - sp.sqrt(N)) == 0
+            and sp.simplify(sq.beta_v - sp.sqrt(N)) == 0,
+            f"F_{N}: graph norms should both be sqrt({N})",
+        )
+
+
+def test_v_cells_round_trip():
+    """Supplying ``v_cells`` must reproduce the same square as supplying ``u_cells``."""
+    sq = dynkin_A(3)
+    v_cells = {cell: sq.v(*cell) for cell in sq.cells()}
+    even, odd, edges = path_graph_bipartition(3)
+    other = CommutingSquare(
+        V00=even, V01=odd, V10=odd, V11=even,
+        h0=edges, v0=edges,
+        h1=[(j, i) for (i, j) in edges], v1=[(j, i) for (i, j) in edges],
+        v_cells=v_cells,
+    )
+    for cell in sq.cells():
+        check(
+            sq.backend.is_zero(sq.u(*cell) - other.u(*cell)),
+            f"u disagrees at {cell} when the square is built from v_cells",
+        )
+    check(other.check_unitarity().ok, "round trip square: u not unitary")
+
+
+def test_non_cell_rejected():
+    sq = dynkin_A(3)
+    try:
+        CommutingSquare(
+            V00=sq.V["00"], V01=sq.V["01"], V10=sq.V["10"], V11=sq.V["11"],
+            h0=sq.graphs["h0"].edges, v0=sq.graphs["v0"].edges,
+            h1=sq.graphs["h1"].edges, v1=sq.graphs["v1"].edges,
+            u_cells={("nope", 2, 2, 1): 1},
+        )
+    except ValueError:
+        return
+    raise AssertionError("an invalid cell key was accepted")
+
+
+# ---------------------------------------------------------------- path spaces
+
+
+def test_path_space_shapes():
+    """H_3 and K_3 must look exactly as specified."""
+    lv = Level(hadamard(fourier_matrix(2)), 2)
+    check(lv.H.types == ("00", "01", "11", "01"), f"H_3 types are {lv.H.types}")
+    check(lv.K.types == ("00", "10", "00", "01"), f"K_3 types are {lv.K.types}")
+    lv3 = Level(hadamard(fourier_matrix(2)), 3)
+    check(lv3.H.types == ("00", "01", "11", "01", "11"), f"H_4 types {lv3.H.types}")
+    check(lv3.K.types == ("00", "10", "00", "10", "11"), f"K_4 types {lv3.K.types}")
+    for n in range(6):
+        lv = Level(hadamard(fourier_matrix(2)), n)
+        check(
+            lv.H.types[-1] == lv.K.types[-1],
+            f"n={n}: H and K end on different vertex sets",
+        )
+        check(
+            lv.H.block_dims() == lv.K.block_dims(),
+            f"n={n}: H and K block dimensions differ",
+        )
+
+
+def test_matrix_units_need_only_common_endpoint():
+    """The path algebra is over the Bratteli diagram: sources may differ."""
+    lv = Level(dynkin_A(3), 1)
+    xi, eta = (1, 2, 1), (3, 2, 1)
+    check(xi[0] != eta[0], "test needs two paths with different sources")
+    e = Op.matrix_unit(lv.H, xi, eta)
+    check(not e.is_zero(), "matrix unit across different sources came out zero")
+    check(
+        lv.span_dimension(lv.generators(1, 1)) == sum(
+            len(v) ** 2 for v in lv.H.blocks.values()
+        ),
+        "A_(1,1) does not have the dimension of the full path algebra",
+    )
+
+
+# ------------------------------------------------------------- level machinery
+
+
+def _level_checks(sq, ns, backend=None, label=""):
+    for n in ns:
+        lv = Level(sq, n, backend=backend)
+        results = [
+            lv.check_W(), lv.check_trace(), lv.check_expectations(),
+            lv.check_commuting_square(), lv.check_generation(),
+        ]
+        if n >= 2:
+            results.append(lv.check_jones())
+        for m in range(1, n + 1):
+            results.append(lv.check_commuting_square(level=m))
+        for res in results:
+            check(res.ok, f"{label} n={n}: {res!r}")
+
+
+def test_levels_hadamard():
+    _level_checks(hadamard(fourier_matrix(2)), range(0, 5), label="F2")
+    _level_checks(hadamard(fourier_matrix(3)), range(0, 3), label="F3")
+
+
+def test_levels_dynkin():
+    _level_checks(dynkin_A(3), range(0, 3), label="A3")
+
+
+def test_levels_numpy_backend():
+    _level_checks(hadamard(fourier_matrix(4)), (2, 3), backend="numpy", label="F4")
+    _level_checks(dynkin_A(4), (2, 3, 4), backend="numpy", label="A4")
+    _level_checks(dynkin_A(5), (2, 3), backend="numpy", label="A5")
+
+
+def test_backends_agree():
+    """Exact and numerical backends must produce the same trace and dimensions."""
+    sq = dynkin_A(3)
+    for n in (2, 3):
+        exact, num = Level(sq, n), Level(sq, n, backend="numpy")
+        g_e = exact._sample(n, 0, 4)
+        g_n = num._sample(n, 0, 4)
+        for a, b in zip(g_e, g_n):
+            ta = complex(sp.N(a.trace(), 25))
+            tb = complex(b.trace())
+            check(abs(ta - tb) < 1e-9, f"n={n}: traces differ, {ta} vs {tb}")
+        for p, q in exact.available_algebras():
+            da = exact.span_dimension(exact.relative_commutant(p, q))
+            db = num.span_dimension(num.relative_commutant(p, q))
+            check(da == db, f"n={n}: dim A_({p},{q})' differs, {da} vs {db}")
+
+
+def test_jones_projection_trace():
+    sq = dynkin_A(3)
+    lv = Level(sq, 4, backend="numpy")
+    for k in range(2, 5):
+        f = lv.jones_H(k)
+        check((f * f - f).is_zero(), f"f_{k} not idempotent")
+        check((f - f.H).is_zero(), f"f_{k} not self adjoint")
+        got = complex(f.trace())
+        want = 1 / complex(sp.N(sq.beta_v ** 2, 25))
+        check(abs(got - want) < 1e-9, f"tr(f_{k}) = {got}, expected {want}")
+
+
+# ------------------------------------------------------- relative commutants
+
+
+def test_relative_commutant_matches_brute_force():
+    for label, sq, ns in [
+        ("F2", hadamard(fourier_matrix(2)), (1, 2, 3)),
+        ("F3", hadamard(fourier_matrix(3)), (1, 2)),
+        ("A3", dynkin_A(3), (1, 2)),
+    ]:
+        for n in ns:
+            lv = Level(sq, n)
+            for p, q in lv.available_algebras():
+                cheap = lv.relative_commutant(p, q)
+                gens = lv.generators(p, q)
+                d_cheap = lv.span_dimension(cheap)
+                d_brute = lv.span_dimension(lv.commutant_of(gens))
+                check(
+                    d_cheap == d_brute == len(cheap),
+                    f"{label} n={n} A_({p},{q})': cheap basis {len(cheap)} "
+                    f"spans {d_cheap}, brute force gives {d_brute}",
+                )
+                for x in cheap:
+                    for g in gens:
+                        check(
+                            (x * g - g * x).is_zero(),
+                            f"{label} n={n} A_({p},{q})': basis element does not commute",
+                        )
+
+
+def test_hadamard_higher_relative_commutants():
+    """F_N spin model = the Z/N group subfactor: dims are 1, N, N^2, ..."""
+    for N in (2, 3):
+        sq = hadamard(fourier_matrix(N))
+        for n in range(1, 4 if N == 2 else 3):
+            lv = Level(sq, n, backend="numpy")
+            got = lv.span_dimension(lv.relative_commutant_in((0, 1), (n, 0)))
+            want = N ** (n - 1)
+            check(got, "")
+            check(got == want, f"F_{N} n={n}: got dim {got}, expected {want}")
+
+
+def _closed_walks(adj, vertex, length):
+    return (adj ** length)[vertex, vertex]
+
+
+def test_dynkin_higher_relative_commutants():
+    """For the flat A_m connection, dim A_(0,1)' cap A_(n,0) counts closed walks.
+
+    Specifically the closed walks of length 2n at the endpoint of A_m, which is
+    the known dimension of the n-th higher relative commutant of the A_m
+    subfactor.
+    """
+    for m, ns in ((3, (1, 2, 3, 4)), (4, (1, 2, 3, 4)), (5, (1, 2, 3))):
+        adj = sp.Matrix(m, m, lambda i, j: 1 if abs(i - j) == 1 else 0)
+        sq = dynkin_A(m)
+        for n in ns:
+            lv = Level(sq, n, backend="numpy")
+            got = lv.span_dimension(lv.relative_commutant_in((0, 1), (n, 0)))
+            want = int(_closed_walks(adj, 0, 2 * n))
+            check(got == want, f"A_{m} n={n}: got dim {got}, expected {want} walks")
+
+
+def test_relative_commutant_is_exact_and_in_ambient():
+    lv = Level(dynkin_A(3), 2)
+    basis = lv.relative_commutant_in((0, 1), (2, 0))
+    ambient = lv.generators(2, 0)
+    sub = lv.generators(0, 1)
+    check(basis, "empty relative commutant")
+    for x in basis:
+        check(lv.in_span(x, ambient), "element is not in A_(n,0)")
+        for g in sub:
+            check((x * g - g * x).is_zero(), "element does not commute with A_(0,1)")
+
+
+# ------------------------------------------------------- expectations & trace
+
+
+def test_expectation_tower_is_consistent():
+    """E onto a smaller algebra factors through the bigger one."""
+    lv = Level(dynkin_A(3), 3, backend="numpy")
+    for g in lv._sample(3, 1, 6):
+        direct = lv.expectation(g, 1, 1)
+        staged = lv.expectation(lv.expectation(g, 2, 1), 1, 1)
+        check((direct - staged).is_zero(), "E_1 != E_1 . E_2")
+
+
+def test_trace_of_projections():
+    lv = Level(hadamard(fourier_matrix(3)), 2)
+    total = sum(
+        complex(sp.N(Op.matrix_unit(lv.H, p, p).trace(), 25)) for p in lv.H.paths
+    )
+    check(abs(total - 1) < 1e-12, f"the minimal projections trace to {total}, not 1")
+
+
+def test_exact_nullspace_agrees_with_sympy():
+    import random
+
+    from pathalg.backend import SympyBackend
+
+    be = SympyBackend()
+    random.seed(11)
+    for _ in range(8):
+        r, c = random.randint(2, 8), random.randint(2, 6)
+        A = sp.Matrix(r, c, lambda i, j: sp.Rational(random.randint(-3, 3), random.randint(1, 3)))
+        ns = be.nullspace(A)
+        check(len(ns) == c - A.rank(), f"nullity {len(ns)} != {c - A.rank()}")
+        for v in ns:
+            check((A * sp.Matrix(v)).is_zero_matrix, "vector is not in the kernel")
+    # algebraic entries, the case that actually matters
+    A = sp.Matrix([
+        [sp.sqrt(2), 1, sp.exp(sp.I * sp.pi / 4)],
+        [2, sp.sqrt(2), sp.sqrt(2) * sp.exp(sp.I * sp.pi / 4)],
+    ])
+    ns = be.nullspace(A)
+    check(len(ns) == 2, f"expected nullity 2, got {len(ns)}")
+    for v in ns:
+        check(be.mat_is_zero(A * sp.Matrix(v)), "algebraic kernel vector is wrong")
+
+
+# -------------------------------------------------------------- slow / exact
+
+
+def test_slow_exact_higher_relative_commutants():
+    lv = Level(dynkin_A(3), 3)
+    got = lv.span_dimension(lv.relative_commutant_in((0, 1), (3, 0)))
+    check(got == 4, f"exact A_3 n=3: got {got}, expected 4")
+
+
+def test_slow_dynkin_A4_variants():
+    """The heavier exact cases: A_4 conjugate connection and v_cells round trip."""
+    sq = dynkin_A(4, sign=-1)
+    check(sq.check_unitarity().ok, "A_4 (sign -1): u not unitary")
+    check(sq.check_biunitarity().ok, "A_4 (sign -1): v not unitary")
+    base = dynkin_A(4)
+    even, odd, edges = path_graph_bipartition(4)
+    other = CommutingSquare(
+        V00=even, V01=odd, V10=odd, V11=even,
+        h0=edges, v0=edges,
+        h1=[(j, i) for (i, j) in edges], v1=[(j, i) for (i, j) in edges],
+        v_cells={cell: base.v(*cell) for cell in base.cells()},
+    )
+    for cell in base.cells():
+        check(base.backend.is_zero(base.u(*cell) - other.u(*cell)),
+              f"A_4: u disagrees at {cell} when built from v_cells")
+
+
+def test_slow_exact_rank():
+    lv = Level(dynkin_A(3), 2, exact_rank=True)
+    res = lv.check_generation()
+    check(res.ok, f"exact rank generation check: {res!r}")
+
+
+TESTS = [
+    test_pf_weights,
+    test_pf_weights_single_field,
+    test_dynkin_biunitarity,
+    test_dynkin_other_sign,
+    test_hadamard_biunitarity,
+    test_v_cells_round_trip,
+    test_non_cell_rejected,
+    test_path_space_shapes,
+    test_matrix_units_need_only_common_endpoint,
+    test_levels_hadamard,
+    test_levels_dynkin,
+    test_levels_numpy_backend,
+    test_backends_agree,
+    test_jones_projection_trace,
+    test_relative_commutant_matches_brute_force,
+    test_hadamard_higher_relative_commutants,
+    test_dynkin_higher_relative_commutants,
+    test_relative_commutant_is_exact_and_in_ambient,
+    test_expectation_tower_is_consistent,
+    test_trace_of_projections,
+    test_exact_nullspace_agrees_with_sympy,
+
+    test_slow_exact_higher_relative_commutants,
+    test_slow_exact_rank,
+]
+
+SLOW_TESTS = [
+    test_slow_dynkin_A4_variants,
+]
+
+
+if __name__ == "__main__":
+    started = time.time()
+    for t in TESTS + (SLOW_TESTS if SLOW else []):
+        run(t)
+    print(f"\n{_RUN - len(_FAILURES)}/{_RUN} passed in {time.time() - started:.1f}s")
+    if not SLOW:
+        print("(run with --slow to add the exact-arithmetic cases)")
+    if _FAILURES:
+        print("\nfailures:")
+        for name, _, tb in _FAILURES:
+            print(f"\n--- {name} ---\n{tb}")
+        sys.exit(1)
