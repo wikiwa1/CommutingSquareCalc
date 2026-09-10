@@ -91,7 +91,10 @@ class _SpanTracker:
     def _add_numeric(self, vec):
         np = self.np
         be = self.be
-        v = np.array([complex(be.to_complex(x)) for x in vec], dtype=complex)
+        if hasattr(vec, "ndim"):  # already an array: convert in one go
+            v = np.asarray(be.to_host(vec), dtype=complex)
+        else:
+            v = np.array([complex(be.to_complex(x)) for x in vec], dtype=complex)
         norm0 = np.linalg.norm(v)
         if norm0 <= self.tol:
             return False
@@ -186,6 +189,7 @@ class Level:
         self.moves = [self._move(k) for k in range(n)]
         self.W = self._build_W()
         self._commutant_cache = {}
+        self._exp_plans = {}
 
     # ------------------------------------------------------------------ set-up
     def _check_block_shapes(self):
@@ -201,10 +205,19 @@ class Level:
         """The elementary connection move ``S_k -> S_{k+1}``."""
         src, dst = self.stages[k], self.stages[k + 1]
         sq, be = self.square, self.backend
+        # the entries go in one at a time, so on a device backend they are
+        # staged on the host first: a per-element write to GPU memory is a
+        # kernel launch, and there are tens of thousands of them here
+        stage = getattr(be, "array", False) and be.name != "numpy"
         blocks = {}
         for key in src.keys:
             rows, cols = dst.blocks[key], src.blocks[key]
-            M = be.zeros(len(rows), len(cols))
+            if stage:
+                import numpy as _np
+
+                M = _np.zeros((len(rows), len(cols)), dtype=be.dtype)
+            else:
+                M = be.zeros(len(rows), len(cols))
             rowpos = {p: i for i, p in enumerate(rows)}
             for j, xi in enumerate(cols):
                 left, right = xi[k], xi[k + 2]
@@ -222,7 +235,7 @@ class Level:
                         # mid = a in V00  ->  v^{c,b}_{a,d}
                         val = sq.v(mid, right, left, xi[k + 1])
                     M[i, j] = be.num(val)
-            blocks[key] = M
+            blocks[key] = be.asarray(M) if stage else M
         return BlockMap(src, dst, blocks, be)
 
     def _build_W(self):
@@ -319,21 +332,85 @@ class Level:
         if not 0 <= m <= L:
             raise ValueError(f"level {m} out of range 0..{L}")
         Q = be.num(sp.expand(space.P[L] / space.P[m]))
-        entries = {}
-        for key, plist in space.level_blocks[m].items():
-            mu_w = be.num(space.square.mu[space.types[m]][key])
-            tails = space.tails(m, key)
-            for xi, eta in itertools.product(plist, repeat=2):
-                acc = be.num(0)
-                for tail in tails:
-                    p, q = xi + tail[1:], eta + tail[1:]
-                    acc = acc + be.num(space.end_weight(p)) * op.entry(p, q)
-                if be.is_zero(acc):
+        mu_end = space.square.mu[space.types[L]]
+        mu_lvl = space.square.mu[space.types[m]]
+        numpy_path = getattr(be, "array", False)
+        blocks = {}
+        for w, prefixes, per_end in self._expectation_plan(space, m):
+            P = len(prefixes)
+            denom = be.num(mu_lvl[w]) * Q
+            if numpy_path:
+                np = be.np
+                acc = np.zeros((P, P), dtype=complex)
+                for y, idx in per_end:
+                    B = op.blocks.get(y)
+                    if B is None:
+                        continue
+                    acc += complex(be.num(mu_end[y])) * B[
+                        idx[:, None, :], idx[None, :, :]
+                    ].sum(axis=2)
+                coeff = acc / complex(denom)
+                for y, idx in per_end:
+                    M = blocks.get(y)
+                    if M is None:
+                        M = be.zeros(len(space.blocks[y]), len(space.blocks[y]))
+                        blocks[y] = M
+                    M[idx[:, None, :], idx[None, :, :]] = coeff[:, :, None]
+                continue
+
+            acc = [[be.num(0)] * P for _ in range(P)]
+            for y, idx in per_end:
+                B = op.blocks.get(y)
+                if B is None:
                     continue
-                coeff = be.simp(acc / (mu_w * Q))
-                for tail in tails:
-                    entries[(xi + tail[1:], eta + tail[1:])] = coeff
-        return Op.from_entries(space, entries, be)
+                wy = be.num(mu_end[y])
+                for i in range(P):
+                    for j in range(P):
+                        s = be.num(0)
+                        for a, b in zip(idx[i], idx[j]):
+                            s = s + B[a, b]
+                        acc[i][j] = acc[i][j] + wy * s
+            for y, idx in per_end:
+                M = blocks.get(y)
+                if M is None:
+                    M = be.zeros(len(space.blocks[y]), len(space.blocks[y]))
+                    blocks[y] = M
+                for i in range(P):
+                    for j in range(P):
+                        if be.is_zero(acc[i][j]):
+                            continue
+                        c = be.simp(acc[i][j] / denom)
+                        for a, b in zip(idx[i], idx[j]):
+                            M[a, b] = c
+        return Op(space, {k: be.simp_mat(v) for k, v in blocks.items()}, be)
+
+    def _expectation_plan(self, space, m):
+        """Index tables for the level-``m`` expectation, built once per level.
+
+        For each vertex ``w`` at level ``m`` this records the prefixes ending
+        there and, for each end vertex ``y``, the matrix of positions of
+        ``prefix + tail`` inside the block of ``y``.  The expectation is then a
+        weighted partial trace over the tail index, which those tables turn
+        into array indexing instead of a dictionary lookup per entry.
+        """
+        key = (id(space), m)
+        plan = self._exp_plans.get(key)
+        if plan is not None:
+            return plan
+        plan = []
+        for w, prefixes in space.level_blocks[m].items():
+            by_end = {}
+            for tail in space.tails(m, w):
+                by_end.setdefault(tail[-1], []).append(tail)
+            per_end = []
+            for y, tails in by_end.items():
+                idx = [[space.index[p + t[1:]][1] for t in tails] for p in prefixes]
+                if getattr(self.backend, "array", False):
+                    idx = self.backend.xp.asarray(idx, dtype=int)
+                per_end.append((y, idx))
+            plan.append((w, prefixes, per_end))
+        self._exp_plans[key] = plan
+        return plan
 
     def expectation(self, op, p, q):
         """Trace preserving conditional expectation of ``op`` onto ``A_{p,q}``."""
@@ -454,9 +531,23 @@ class Level:
             if sub_space is self.K:
                 basis = [self.W.pull_back(g) for g in basis]
         else:
-            basis = self._commutant_by_solving(
-                self.generating_set(*sub), self.generators(*ambient)
-            )
+            # Mixed pictures (one algebra read off H, the other off K).  Rather
+            # than solve the commutation relations against a basis of the
+            # ambient -- which costs one operator product per (ambient
+            # generator, sub generator) pair and is by far the slowest thing in
+            # the library -- cut down the commutant inside A_{n,1}, which does
+            # have the cheap basis, by
+            #
+            #     A_sub' cap A_amb = { x in A_sub' cap A_{n,1} : E_amb(x) = x }
+            #
+            # using that a trace preserving expectation fixes exactly its own
+            # range.  That is one expectation per basis element, and the basis
+            # is small.
+            if getattr(self.backend, "array", False) and sub_space is self.H:
+                basis = self._intersect_by_angles(sub, ambient)
+            else:
+                outer = self.relative_commutant_in(sub, (self.n, 1))
+                basis = self._cut_down_by_expectation(outer, ambient)
         self._commutant_cache[key] = basis
         return basis
 
@@ -476,6 +567,301 @@ class Level:
                         )
                     basis.append(op)
         return basis
+
+    # ------------------------------------------- the batched intersection route
+    #
+    # Everything from here to _cut_down_by_expectation is one algorithm, used
+    # whenever the blocks are arrays (numpy or cupy).  It computes the same
+    # thing as _cut_down_by_expectation and is checked against it in the tests,
+    # but it never builds a k x k matrix and never touches a Python scalar in a
+    # loop, which is what makes n = 5 and n = 6 reachable.
+    #
+    # The observation it rests on: the cheap commutant basis
+    #
+    #     u_i = sum over prefixes sigma of E_{sigma tau, sigma rho}
+    #
+    # is *orthogonal* for the Markov inner product, with
+    # ||u_i||^2 = (#prefixes) mu(y) / (Z0 P).  So after rescaling to unit
+    # vectors the problem is a principal angle problem between two subspaces of
+    # A_{n,1}: span(u_i), and the ambient A_ambient.  A trace preserving
+    # expectation is the orthogonal projection onto the second, so
+    #
+    #     A_sub' cap A_amb = { x in span(u) : ||E x|| = ||x|| },
+    #
+    # the singular value 1 subspace of B = (coefficients of E u_i), a
+    # k x dim A_amb matrix.  Both dimensions are far smaller than
+    # dim A_{n,1}, and B is written one chunk of rows at a time, so the peak
+    # memory is set by the chunk rather than by k.
+
+    def _cheap_basis_groups(self, space, m):
+        """The cheap commutant basis of the level-``m`` algebra, as index data.
+
+        Returns ``(groups, k, weights)``.  A group is ``(y, idx, start)`` where
+        ``idx`` has shape ``(#prefixes, #tails)`` and holds positions inside the
+        block of ``y``; element ``t1 * T + t2`` of the group -- basis element
+        ``start + t1 * T + t2`` overall -- is
+        ``sum_s E_{idx[s, t1], idx[s, t2]}``.  ``weights[i]`` is ``||u_i||^2``.
+
+        The index tables are exactly the ones :meth:`_expectation_plan` already
+        builds, and the enumeration order matches
+        :meth:`_relative_commutant_on`, so the two bases agree element for
+        element.
+        """
+        be = self.backend
+        sq = self.square
+        Z0 = sp.Add(*[sq.mu["00"][a] for a in sq.V["00"]])
+        norm = Z0 * space.P[space.L]
+        mu_end = sq.mu[space.types[space.L]]
+        groups, weights, start = [], [], 0
+        for w, prefixes, per_end in self._expectation_plan(space, m):
+            for y, idx in per_end:
+                T = idx.shape[1]
+                groups.append((y, idx, start))
+                wt = float(sp.N(len(prefixes) * mu_end[y] / norm))
+                weights.extend([wt] * (T * T))
+                start += T * T
+        return groups, start, be.xp.asarray(weights, dtype=be.real_dtype)
+
+    def _stack_chunk(self, space, groups, lo, hi):
+        """Blocks of basis elements ``lo:hi``, as ``{y: array (hi-lo, d, d)}``."""
+        be, xp = self.backend, self.backend.xp
+        stack = {}
+        for y, idx, start in groups:
+            T = idx.shape[1]
+            a, b = max(lo, start), min(hi, start + T * T)
+            if a >= b:
+                continue
+            A = stack.get(y)
+            if A is None:
+                d = len(space.blocks[y])
+                A = be.zeros(hi - lo, d, d)
+                stack[y] = A
+            loc = xp.arange(a - start, b - start)
+            A[xp.arange(a - lo, b - lo)[None, :], idx[:, loc // T], idx[:, loc % T]] = 1
+        return stack
+
+    def _congruence_stack(self, bmap, stack):
+        """``W X W*`` for a whole stack at once, one batched matmul per block."""
+        out = {}
+        for key, X in stack.items():
+            A = bmap.blocks.get(key)
+            if A is not None:
+                out[key] = A @ X @ A.conj().T
+        return out
+
+    def _expectation_coeffs(self, space, stack, m):
+        """Coefficients of ``E_m(x)`` on the matrix units of the level-``m`` algebra.
+
+        Same weighted partial trace as :meth:`_expectation_on`, with a leading
+        batch axis and stopping before the result is written back out to a full
+        block -- the coefficients are all the inner products need, and there are
+        ``dim A_{m}`` of them rather than ``dim A_{n,1}``.
+        """
+        be, xp = self.backend, self.backend.xp
+        L = space.L
+        Q = be.num(sp.expand(space.P[L] / space.P[m]))
+        mu_end = space.square.mu[space.types[L]]
+        mu_lvl = space.square.mu[space.types[m]]
+        out = []
+        for w, prefixes, per_end in self._expectation_plan(space, m):
+            acc = None
+            for y, idx in per_end:
+                B = stack.get(y)
+                if B is None:
+                    continue
+                gathered = B[:, idx[:, None, :], idx[None, :, :]].sum(axis=3)
+                term = xp.asarray(be.num(mu_end[y]), dtype=be.dtype) * gathered
+                acc = term if acc is None else acc + term
+            if acc is None:
+                continue
+            out.append((w, acc / xp.asarray(be.num(mu_lvl[w]) * Q, dtype=be.dtype)))
+        return out
+
+    def _ambient_unit_weights(self, space, m):
+        """``||f||^2`` for a matrix unit ``f`` of the level-``m`` algebra, per ``w``."""
+        be = self.backend
+        sq = space.square
+        Z0 = sp.Add(*[sq.mu["00"][a] for a in sq.V["00"]])
+        mu_end = sq.mu[space.types[space.L]]
+        out = {}
+        for w, prefixes, per_end in self._expectation_plan(space, m):
+            total = sp.Integer(0)
+            for y, idx in per_end:
+                total += idx.shape[1] * mu_end[y]
+            out[w] = be.num(total / (Z0 * space.P[space.L]))
+        return out
+
+    def _intersect_by_angles(self, sub, ambient, chunk=None):
+        """``A_sub' cap A_ambient`` via principal angles.  See the note above."""
+        be, xp = self.backend, self.backend.xp
+        sub_space, sub_m = self._space_and_level(*sub)
+        amb_space, amb_m = self._space_and_level(*ambient)
+        groups, k, gram = self._cheap_basis_groups(sub_space, sub_m)
+        if k == 0:
+            return []
+
+        unit = self._ambient_unit_weights(amb_space, amb_m)
+        cols, width = [], 0
+        for w, prefixes, _ in self._expectation_plan(amb_space, amb_m):
+            cols.append((w, width, len(prefixes) ** 2))
+            width += len(prefixes) ** 2
+
+        if chunk is None:
+            # keep one chunk of dense blocks under ~256 MB
+            per = max(1, sum(len(b) ** 2 for b in sub_space.blocks.values()))
+            chunk = max(1, min(k, int(256e6 / (per * xp.dtype(be.dtype).itemsize))))
+
+        B = be.zeros(k, width)
+        for lo in range(0, k, chunk):
+            hi = min(k, lo + chunk)
+            stack = self._stack_chunk(sub_space, groups, lo, hi)
+            if amb_space is not sub_space:
+                stack = self._congruence_stack(self.W, stack)
+            for w, C in self._expectation_coeffs(amb_space, stack, amb_m):
+                off = next(o for ww, o, _ in cols if ww == w)
+                scale = xp.asarray(be.sqrt(unit[w]), dtype=be.dtype)
+                B[lo:hi, off : off + C.shape[1] ** 2] = scale * C.reshape(hi - lo, -1)
+            del stack
+        B /= xp.sqrt(gram)[:, None]
+
+        # ||E x|| = ||x|| exactly on the singular value 1 subspace of B, and
+        # every singular value is at most 1 because E is a projection.  Take
+        # that subspace from the eigenvectors of B B*, not from an SVD of B:
+        # the right singular vectors are never used and they are the bulk of
+        # the work, dim A_amb being far larger than k.  Squaring costs half the
+        # digits and there are plenty -- the gap either side of the cut is
+        # reported in _last_angle_gap and is of order 0.1, not of order eps.
+        w, U = xp.linalg.eigh(B @ B.conj().T)
+        w = be.to_host(w).real
+        cut = (1 - be.tol) ** 2
+        first = int((w < cut).sum())  # eigh is ascending
+        keep = w.size - first
+        self._last_angle_gap = (
+            float(max(w[first - 1], 0.0)) ** 0.5 if first else 0.0,
+            float(max(w[first], 0.0)) ** 0.5 if keep else 1.0,
+        )
+        coeffs = U[:, first:].conj() / xp.sqrt(gram)[:, None]
+        return [self._op_from_cheap_coeffs(sub_space, groups, coeffs[:, j])
+                for j in range(keep)]
+
+    def _op_from_cheap_coeffs(self, space, groups, coeffs):
+        """``sum_i coeffs[i] u_i`` written straight into its blocks."""
+        be, xp = self.backend, self.backend.xp
+        blocks = {}
+        for y, idx, start in groups:
+            T = idx.shape[1]
+            d = len(space.blocks[y])
+            M = blocks.get(y)
+            if M is None:
+                M = be.zeros(d, d)
+                blocks[y] = M
+            c = coeffs[start : start + T * T].reshape(T, T)
+            flat = (idx[:, :, None] * d + idx[:, None, :]).reshape(-1)
+            M.reshape(-1)[flat] += xp.broadcast_to(
+                c, (idx.shape[0], T, T)
+            ).reshape(-1)
+        return Op(space, blocks, be)
+
+    def _cut_down_by_expectation(self, outer, ambient):
+        """``{ x in span(outer) : E_ambient(x) = x }``, via a small Gram matrix.
+
+        Writing ``x = sum c_i u_i``, the trace preserving expectation is an
+        orthogonal projection for the Markov inner product, so
+
+            || x - E(x) ||^2  =  ||x||^2 - ||E(x)||^2  =  c* (G - H) c
+
+        with ``G_ij = tr(u_i* u_j)`` and ``H_ij = tr(u_i* E(u_j))``.  The answer
+        is the kernel of the positive semidefinite form ``G - H``, which is only
+        ``len(outer)`` square -- whereas writing the same condition out in
+        ambient coordinates would need one row per dimension of ``A_{n,1}``,
+        tens of thousands of them by ``n = 5``.  The ``u_i`` are very sparse
+        (one entry per prefix), so each pairing is a gather rather than a full
+        block product.
+        """
+        be = self.backend
+        k = len(outer)
+        if k == 0:
+            return []
+        tables, norm = self._pairing_tables(outer)
+        G = be.zeros(k, k)
+        M = be.zeros(k, k)
+        for j, u in enumerate(outer):
+            col_g = self._pair_all(tables, k, u, norm)
+            col_h = self._pair_all(tables, k, self.expectation(u, *ambient), norm)
+            for i in range(k):
+                G[i, j] = col_g[i]
+                M[i, j] = col_g[i] - col_h[i]
+        del G
+        basis = []
+        for coeffs in self._solve_homogeneous(
+            [[M[i, j] for j in range(k)] for i in range(k)], k
+        ):
+            op = Op.zero(self.H, be)
+            for c, u in zip(coeffs, outer):
+                if not be.is_zero(c):
+                    op = op + c * u
+            basis.append(op)
+        return basis
+
+    def _pairing_tables(self, ops):
+        """Support tables for computing ``tr(u_i* X)`` for every ``u_i`` at once.
+
+        ``Op`` stores blocks densely, but the cheap commutant basis has only a
+        handful of nonzero entries each, so recording the support once turns the
+        whole Gram computation into one gather per target operator.
+        """
+        be = self.backend
+        sq, space = self.square, self.H
+        endtag = space.types[-1]
+        Z0 = sp.Add(*[sq.mu["00"][a] for a in sq.V["00"]])
+        norm = be.num(Z0 * space.P[space.L])
+        tables = {}
+        for i, op in enumerate(ops):
+            for y, blk in op.blocks.items():
+                w = sq.mu[endtag][y]
+                t = tables.setdefault(y, {"i": [], "r": [], "c": [], "k": []})
+                n_y = len(space.blocks[y])
+                for r in range(n_y):
+                    for c in range(n_y):
+                        val = blk[r, c]
+                        if be.is_zero(val):
+                            continue
+                        t["i"].append(i)
+                        t["r"].append(r)
+                        t["c"].append(c)
+                        t["k"].append(be.conj(val) * be.num(w))
+        if getattr(be, "array", False):
+            np = be.xp
+            for t in tables.values():
+                t["i"] = np.array(t["i"], dtype=int)
+                t["r"] = np.array(t["r"], dtype=int)
+                t["c"] = np.array(t["c"], dtype=int)
+                t["k"] = np.array(t["k"], dtype=complex)
+        return tables, norm
+
+    def _pair_all(self, tables, k, target, norm):
+        """``[ tr(u_i* target) for i in range(k) ]``."""
+        be = self.backend
+        if getattr(be, "array", False):
+            np = be.xp
+            out = np.zeros(k, dtype=complex)
+            for y, t in tables.items():
+                B = target.blocks.get(y)
+                if B is None:
+                    continue
+                vals = t["k"] * B[t["r"], t["c"]]
+                out += np.bincount(t["i"], weights=vals.real, minlength=k) + 1j * (
+                    np.bincount(t["i"], weights=vals.imag, minlength=k)
+                )
+            return out / complex(norm)
+        out = [be.num(0)] * k
+        for y, t in tables.items():
+            B = target.blocks.get(y)
+            if B is None:
+                continue
+            for i, r, c, coef in zip(t["i"], t["r"], t["c"], t["k"]):
+                out[i] = out[i] + coef * B[r, c]
+        return [be.simp(x / norm) for x in out]
 
     def _commutant_by_solving(self, sub_gens, amb_gens):
         """Elements of ``span(amb_gens)`` commuting with every ``sub_gens``."""
@@ -582,19 +968,31 @@ class Level:
     def _tracker(self):
         return _SpanTracker(self.backend, exact=self.exact_rank)
 
+    def _coords(self, op):
+        """Coordinates of ``op``, as one array when the backend has arrays."""
+        if getattr(self.backend, "array", False) and not self.exact_rank:
+            return op.vector_array()
+        return op.vector()
+
     def span_dimension(self, ops):
         """Dimension of the linear span of a list of operators."""
+        be = self.backend
+        if getattr(be, "array", False) and not self.exact_rank and ops:
+            # one rank of one stacked matrix, rather than a Gram-Schmidt pass
+            # per operator against every operator kept so far
+            M = be.xp.stack([op.vector_array() for op in ops])
+            return int(be.rank(M))
         tr = self._tracker()
         for op in ops:
-            tr.add(op.vector())
+            tr.add(self._coords(op))
         return tr.dim
 
     def in_span(self, op, ops):
         """Is ``op`` in the linear span of ``ops``?"""
         tr = self._tracker()
         for x in ops:
-            tr.add(x.vector())
-        return not tr.add(op.vector())
+            tr.add(self._coords(x))
+        return not tr.add(self._coords(op))
 
     _in_span = in_span
 
@@ -606,14 +1004,14 @@ class Level:
         tr = self._tracker()
         basis = []
         for op in seeds:
-            if tr.add(op.vector()):
+            if tr.add(self._coords(op)):
                 basis.append(op)
         for _ in range(max_steps):
             grew = False
             for x in list(basis):
                 for y in list(basis):
                     p = x * y
-                    if tr.add(p.vector()):
+                    if tr.add(self._coords(p)):
                         basis.append(p)
                         grew = True
             if not grew:
@@ -695,7 +1093,7 @@ class Level:
         tr = self._tracker()
         for x in left:
             for y in right:
-                tr.add((x * y).vector())
+                tr.add(self._coords(x * y))
                 if tr.dim == want:
                     return res
         res.fail(f"the products span dimension {tr.dim}, but dim A_(n,1) = {want}")

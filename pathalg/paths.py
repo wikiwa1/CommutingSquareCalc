@@ -334,6 +334,18 @@ class Op:
             total = total + w * be.trace(blk)
         return be.simp(total / norm)
 
+    def vector_array(self):
+        """:meth:`vector` as one flat array; only for the array backends.
+
+        The same coordinates in the same order, but without ``dim A_{n,1}``
+        Python objects being created to hold them -- which matters once that is
+        tens of thousands of entries per operator.
+        """
+        be = self.backend
+        return be.xp.concatenate(
+            [self._blk(key).reshape(-1) for key in self.space.keys]
+        )
+
     def vector(self):
         """Flatten to a coordinate vector over a fixed basis of the block algebra."""
         be = self.backend

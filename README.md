@@ -6,7 +6,9 @@ dimensional algebras, from a bi-unitary connection. `A_{n,1}`, `A_{n-1,1}` and
 from the three algebras can be multiplied, added and compared directly.
 
 Requires Python 3.9+ and `sympy`; `numpy` is optional but recommended (it backs
-the fast numerical mode and the rank computations).
+the fast numerical mode and the rank computations). `cupy` is optional on top of
+that and moves the whole tower onto the GPU -- see
+[Exactness and performance](#exactness-and-performance).
 
 ```
 pathalg/
@@ -17,6 +19,7 @@ pathalg/
   backend.py    exact (sympy) and numerical (numpy) arithmetic
   examples.py   Dynkin and Hadamard squares, ready to use
 demo.py         a worked example, start to finish
+ah_demo.py      the Asaeda-Haagerup square of S1122.txt, same shape as demo.py
 test_pathalg.py the test suite (python test_pathalg.py [--slow])
 ```
 
@@ -118,6 +121,8 @@ square.verify()                 # inclusion matrices, weights, unitarity, bi-uni
 
 lv = Level(square, n=3)         # everything on H_4
 lv.verify()                     # W unitary, trace, expectations, Jones, commuting square
+
+lv = Level(square, n=6, backend="cupy64")   # the same, on the GPU
 ```
 
 `u_cells` may instead be a callable `f(square, a, b, c, d) -> value`, evaluated
@@ -168,9 +173,10 @@ documented in the code and both switchable:
   is drastically slower. Pass `Level(..., exact_rank=True)` to force exact.
   Every *identity* — products, adjoints, expectations, commutators, zero tests
   — is exact regardless.
-- **`backend="numpy"`** switches the whole level to `complex128`. Use it for
-  larger `n`; `test_backends_agree` checks the two agree on traces and
-  dimensions.
+- **The backend** switches the arithmetic of the whole level:
+  `"numpy"` is `complex128` on the CPU, `"cupy"` the same on the GPU, and
+  `"cupy64"` is `complex64` on the GPU. `test_backends_agree` and
+  `test_gpu_matches_cpu` check they agree on traces and dimensions.
 
 Two things dominate exact performance, and both are easy to get wrong:
 
@@ -193,9 +199,54 @@ Homogeneous systems are hugely overdetermined, so a numerically independent
 subset of rows is solved exactly and the answer is then *verified* against every
 original row — sound, because `ker(subset)` always contains `ker(all)`.
 
+### Higher relative commutants
+
+`relative_commutant_in((0, 1), (n, 0))` is the expensive one and gets its own
+algorithm whenever the backend has arrays. The cheap commutant basis
+`u_i = sum_sigma E_{sigma tau, sigma rho}` is *orthogonal* for the Markov inner
+product, so after rescaling to unit vectors the problem is a principal angle
+one between two subspaces of `A_{n,1}`: `span(u_i)` and the ambient `A_{n,0}`.
+A trace preserving expectation is the orthogonal projection onto the second, so
+
+```
+A_{0,1}' cap A_{n,0} = { x in span(u) : ||E x|| = ||x|| },
+```
+
+the singular value 1 subspace of the `k x dim A_{n,0}` matrix of coefficients
+of `E u_i`. Both of those dimensions are far below `dim A_{n,1}`, the matrix is
+written one chunk of rows at a time so peak memory is set by the chunk, and the
+answer comes from `eigh(B B*)` rather than an SVD of `B`, since the right
+singular vectors are never used and are most of the work. `_last_angle_gap`
+records the largest discarded cosine against the smallest kept one: the cut is
+only meaningful while those stay far apart, and in practice they are 0.89
+against 1.0.
+
+The whole route is checked against the older `k x k` Gram cut-down, which is
+still what the exact backend uses, in `test_intersection_routes_agree`.
+
+### Timings
+
 Rough exact timings (this machine): `A_3` at `n = 3` all checks ≈ 20s, all
 relative commutants ≈ instant. With `backend="numpy"`, `A_4` at `n = 4`
 (`dim H_5 = 21`) ≈ 8s.
+
+For the Asaeda-Haagerup square of `ah_demo.py`, `dim A_(0,1)' cap A_(n,0)`,
+on an RTX 4070 SUPER:
+
+| n | dim H_(n+1) | k | numpy | cupy | cupy64 |
+| --- | --- | --- | --- | --- | --- |
+| 5 | 200 | 1976 | 9.7s | 0.9s | 0.4s |
+| 6 | 584 | 9010 | 815s | 50s | 5.0s |
+
+`k` is the dimension of the outer commutant that gets cut down. The `cupy` /
+`cupy64` gap is the card: consumer GeForce parts run `float64` at 1/64 rate, so
+`complex128` matmul measures 524 GFLOP/s against 12.3 TFLOP/s for `complex64`.
+Single precision is safe here because every decision is that principal angle,
+and 0.89 against 1.0 is nowhere near seven digits.
+
+`n = 7` is out of reach by any backend: `k = 41096` and `dim A_(7,0) = 86560`,
+so `B` alone is 28 GB in `complex64`. Getting there needs a matrix free method
+for the smallest eigenspace, storing `k x r` rather than `k x k`.
 
 ## Tests
 
@@ -223,6 +274,8 @@ The ones with an answer from outside the library:
 - Symbolic *parameters* in connection entries are not really supported: zero
   testing assumes algebraic numbers. Declare any symbols real and expect the
   slow `simplify` path.
+- The GPU backends are floating point only; `backend="sympy"` stays on the CPU
+  and keeps the original `k x k` Gram route.
 - When `|V00| = 1`, `A_{0,0}` is the scalars and `A_{0,0}' cap A_{n,1}` is all
   of `A_{n,1}` — correct, but not informative. The higher relative commutant
   you probably want is `relative_commutant_in((0,1), (n,0))`.

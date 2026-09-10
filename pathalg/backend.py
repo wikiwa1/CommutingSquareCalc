@@ -3,11 +3,13 @@
 Two interchangeable backends are provided:
 
 ``SympyBackend``  exact symbolic arithmetic (the default),
-``NumpyBackend``  ``complex128`` arithmetic, for fast sanity checks on large ``n``.
+``ArrayBackend``  floating point on a numpy-like namespace -- numpy or cupy,
+                  at ``complex128`` or ``complex64``.
 
 Everything downstream (path spaces, block operators, the tower) is written
 against the small duck-typed interface below, so switching backend is a
-one-word change.
+one-word change: ``Level(square, n, backend="cupy64")`` runs the whole tower
+on the GPU in single precision.
 """
 
 from __future__ import annotations
@@ -16,7 +18,7 @@ import cmath
 
 import sympy as sp
 
-__all__ = ["SympyBackend", "NumpyBackend", "get_backend"]
+__all__ = ["SympyBackend", "ArrayBackend", "NumpyBackend", "get_backend", "gpu_available"]
 
 
 class SympyBackend:
@@ -294,22 +296,53 @@ class SympyBackend:
         return A.cols - len(self.nullspace(A))
 
 
-class NumpyBackend:
-    """Floating point arithmetic on ``numpy`` arrays."""
+class ArrayBackend:
+    """Floating point arithmetic on the arrays of some numpy-like namespace.
 
-    name = "numpy"
+    ``xp`` is the array module -- ``numpy`` or ``cupy`` -- and ``dtype`` the
+    complex type the blocks are stored in.  Every hot path in :mod:`tower` is
+    written as whole-array operations on stacks of shape ``(k, d, d)``, so the
+    only thing that distinguishes CPU from GPU is which module lands here.
+
+    Scalars never move: :meth:`num`, :meth:`conj`, :meth:`sqrt` and
+    :meth:`is_zero` all take and return host ``complex`` values, because they
+    talk to sympy on the other side.
+    """
+
     exact = False
+    array = True  # "blocks are numpy-like arrays"; tower.py branches on this
 
-    def __init__(self, tol: float = 1e-9):
-        import numpy as np
+    def __init__(self, xp=None, dtype=None, tol=None):
+        if xp is None:
+            import numpy as xp
+        self.xp = xp
+        self.np = xp  # historical alias; a lot of call sites say be.np
+        self.dtype = dtype if dtype is not None else xp.complex128
+        self.single = xp.dtype(self.dtype).itemsize == 8
+        # complex64 carries about 7 significant digits, so a 1e-9 threshold
+        # would call genuine zeros nonzero.  Everything downstream compares
+        # against be.tol, so deriving it here is enough.
+        self.tol = tol if tol is not None else (1e-5 if self.single else 1e-9)
+        self.name = getattr(xp, "__name__", "array")
 
-        self.np = np
-        self.tol = tol
+    @property
+    def real_dtype(self):
+        return self.xp.float32 if self.single else self.xp.float64
+
+    def to_host(self, A):
+        """Bring an array back to numpy (identity when it is already there)."""
+        asnumpy = getattr(self.xp, "asnumpy", None)
+        return A if asnumpy is None else asnumpy(A)
+
+    def asarray(self, A):
+        return self.xp.asarray(A, dtype=self.dtype)
 
     # ------------------------------------------------------------------ scalars
     def num(self, x):
         if isinstance(x, (int, float, complex)):
             return complex(x)
+        if hasattr(x, "item") and getattr(x, "ndim", 1) == 0:
+            return complex(x.item())  # a 0-d numpy / cupy scalar
         return complex(sp.N(sp.sympify(x), 30))
 
     def conj(self, x):
@@ -328,11 +361,13 @@ class NumpyBackend:
         return abs(self.num(x)) <= self.tol
 
     # ----------------------------------------------------------------- matrices
-    def zeros(self, r, c):
-        return self.np.zeros((r, c), dtype=complex)
+    def zeros(self, *shape):
+        if len(shape) == 1 and isinstance(shape[0], tuple):
+            shape = shape[0]
+        return self.xp.zeros(shape, dtype=self.dtype)
 
     def eye(self, n):
-        return self.np.eye(n, dtype=complex)
+        return self.xp.eye(n, dtype=self.dtype)
 
     def shape(self, A):
         return A.shape
@@ -353,37 +388,90 @@ class NumpyBackend:
         return self.num(s) * A
 
     def trace(self, A):
-        return complex(self.np.trace(A)) if A.size else 0j
+        return complex(self.xp.trace(A)) if A.size else 0j
 
     def mat_is_zero(self, A):
-        return bool(self.np.all(self.np.abs(A) <= self.tol))
+        return bool(self.xp.all(self.xp.abs(A) <= self.tol))
 
     def simp_mat(self, A):
         return A
 
     def nullspace(self, A):
         """A list of flat coordinate lists spanning ``ker(A)``."""
-        np = self.np
+        xp = self.xp
         if A.shape[1] == 0:
             return []
         if A.shape[0] == 0:
-            return [list(np.eye(A.shape[1], dtype=complex)[:, j]) for j in range(A.shape[1])]
-        _, s, vh = np.linalg.svd(A)
-        rank = int((s > max(A.shape) * (s[0] if s.size else 0) * 1e-12).sum())
-        return [list(vh[j, :].conj()) for j in range(rank, A.shape[1])]
+            return [list(self.eye(A.shape[1])[:, j]) for j in range(A.shape[1])]
+        _, s, vh = xp.linalg.svd(A)
+        cut = max(A.shape) * (float(s[0]) if s.size else 0.0) * 1e-12
+        rank = int((s > cut).sum())
+        return [list(self.to_host(vh[j, :].conj())) for j in range(rank, A.shape[1])]
 
     def rank(self, A):
+        """Numerical rank, cut relative to the largest singular value.
+
+        A relative cut rather than ``matrix_rank``'s absolute one, so that the
+        same threshold works for operators of any overall scale and for both
+        precisions.
+        """
         if A.shape[0] == 0 or A.shape[1] == 0:
             return 0
-        return int(self.np.linalg.matrix_rank(A, tol=self.tol))
+        s = self.to_host(self.xp.linalg.svd(A, compute_uv=False)).real
+        if not s.size or s[0] == 0:
+            return 0
+        return int((s > s[0] * self.tol).sum())
+
+
+# the historical name: numpy at double precision
+def NumpyBackend(tol=None):
+    return ArrayBackend(None, None, tol)
+
+
+def gpu_available():
+    """Is there a GPU that cupy can actually compute on?
+
+    Being able to ``import cupy`` is not enough: it imports without complaint on
+    a machine with no NVIDIA card or no driver, and only fails at the first
+    array operation.  So ask the CUDA runtime for a device instead.
+    """
+    try:
+        import cupy as cp
+
+        return cp.cuda.runtime.getDeviceCount() > 0
+    except Exception:  # noqa: BLE001 -- not installed, no driver, no device
+        return False
 
 
 def get_backend(spec):
-    """Accept ``'sympy'`` / ``'numpy'`` / a backend instance."""
+    """Accept ``'sympy'``, ``'numpy'``, ``'cupy'``, ``'cupy64'``, ``'auto'`` or an instance.
+
+    ``'cupy'`` is ``complex128`` on the GPU and ``'cupy64'`` is ``complex64``;
+    on a consumer card the second is one to two orders of magnitude faster,
+    since fp64 runs at 1/64 rate there.  ``'auto'`` is ``'cupy64'`` when
+    :func:`gpu_available` says so and ``'numpy'`` otherwise, so code written
+    with it runs unchanged on machines with and without a GPU.
+    """
     if spec is None or spec == "sympy":
         return SympyBackend()
+    if spec == "auto":
+        spec = "cupy64" if gpu_available() else "numpy"
     if spec == "numpy":
-        return NumpyBackend()
+        return ArrayBackend()
+    if spec == "numpy64":  # complex64 on the CPU, mostly for testing the tolerances
+        import numpy as np
+
+        return ArrayBackend(np, np.complex64)
+    if spec in ("cupy", "cupy64"):
+        if not gpu_available():
+            raise RuntimeError(
+                f"backend {spec!r} needs cupy and a CUDA GPU, and this machine "
+                "has no usable one; use backend='numpy' (same results, on the "
+                "CPU) or backend='auto' to pick whichever is available"
+            )
+        import cupy as cp
+
+        return ArrayBackend(cp, cp.complex64 if spec == "cupy64" else cp.complex128)
     if isinstance(spec, str):
         raise ValueError(f"unknown backend {spec!r}")
     return spec

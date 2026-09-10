@@ -378,6 +378,80 @@ def test_exact_nullspace_agrees_with_sympy():
         check(be.mat_is_zero(A * sp.Matrix(v)), "algebraic kernel vector is wrong")
 
 
+# ------------------------------------------------- the batched / GPU route
+
+
+def _array_backends():
+    """``numpy``, plus the GPU backends when there is a GPU to run them on."""
+    from pathalg import gpu_available
+
+    return ["numpy", "cupy", "cupy64"] if gpu_available() else ["numpy"]
+
+
+def test_intersection_routes_agree():
+    """The batched principal-angle route against the original Gram cut-down.
+
+    ``_intersect_by_angles`` is a different algorithm reaching the same
+    subspace -- singular values of a k x dim(ambient) matrix rather than the
+    kernel of a k x k one -- so agreeing on every case is a real check of both.
+    """
+    cases = [(dynkin_A(3), (1, 2, 3)), (dynkin_A(4), (1, 2, 3)),
+             (hadamard(fourier_matrix(3)), (1, 2))]
+    for sq, ns in cases:
+        for n in ns:
+            lv = Level(sq, n, backend="numpy")
+            fast = lv._intersect_by_angles((0, 1), (n, 0))
+            slow = lv._cut_down_by_expectation(
+                lv.relative_commutant_in((0, 1), (n, 1)), (n, 0)
+            )
+            a, b = lv.span_dimension(fast), lv.span_dimension(slow)
+            check(a == b, f"n={n}: angle route gives {a}, cut-down gives {b}")
+            lo, hi = lv._last_angle_gap
+            check(hi - lo > 1e-3, f"n={n}: principal angles too close to call")
+
+
+def test_asaeda_haagerup_sequence():
+    """The S1122 connection at a generic s gives A_infinity: 1, 2, 5, 14, ...
+
+    The connection is bi-unitary for every s but flat only at finitely many, so
+    the generic answer is the Catalan sequence.  Anything else at these n would
+    mean either a special s or a bug.
+    """
+    import ah_demo
+
+    want = [1, 2, 5, 14, 42]
+    for name in _array_backends():
+        sq = ah_demo.ah_square(sp.pi / 3, backend=name)
+        check(sq.verify(verbose=False), f"{name}: AH square failed verification")
+        for n in range(1, 6 if SLOW else 5):
+            lv = Level(sq, n, backend=name)
+            got = lv.span_dimension(lv.relative_commutant_in((0, 1), (n, 0)))
+            check(
+                got == want[n - 1],
+                f"{name} AH n={n}: got dim {got}, expected {want[n - 1]}",
+            )
+
+
+def test_gpu_matches_cpu():
+    """Same dimensions from the GPU, in both precisions, or skip if no cupy."""
+    backends = _array_backends()
+    if len(backends) == 1:
+        return  # no usable GPU on this machine; nothing to compare
+    for sq, ns in ((dynkin_A(4), (1, 2, 3)), (hadamard(fourier_matrix(3)), (1, 2))):
+        for n in ns:
+            dims = []
+            for name in backends:
+                lv = Level(sq, n, backend=name)
+                dims.append(
+                    lv.span_dimension(lv.relative_commutant_in((0, 1), (n, 0)))
+                )
+            check(
+                len(set(dims)) == 1,
+                f"n={n}: backends disagree, {dict(zip(backends, dims))}",
+            )
+
+
+
 # -------------------------------------------------------------- slow / exact
 
 
@@ -433,6 +507,9 @@ TESTS = [
     test_expectation_tower_is_consistent,
     test_trace_of_projections,
     test_exact_nullspace_agrees_with_sympy,
+    test_intersection_routes_agree,
+    test_asaeda_haagerup_sequence,
+    test_gpu_matches_cpu,
 
     test_slow_exact_higher_relative_commutants,
     test_slow_exact_rank,
