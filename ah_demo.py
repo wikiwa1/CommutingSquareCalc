@@ -2,6 +2,22 @@
 
 Run with ``python ah_demo.py``.
 
+Reference
+---------
+The connection comes from
+
+    D. Bisch and J. Cáceres, "New hyperfinite subfactors with infinite depth",
+    arXiv:2509.00227, https://arxiv.org/abs/2509.00227
+
+Section 5, "A 1-parameter family of commuting squares for 4-stars", constructs
+a one-parameter family of bi-unitary connections on the 4-stars S(i,i,j,j);
+``S1122.txt`` is the case S(1,1,2,2), i = 1 and j = 2, whose index is the
+(5 + sqrt(17)) / 2 entry of the table there.  The parameter s and the angle t
+below are the ones of that section.  Theorem 5.4 uses the family to show that
+there are irreducible hyperfinite A_infinity subfactors at this index.
+
+The square
+----------
 The data is the one in ``S1122.txt``: a 3 x 4 initial graph
 
         a2 --- a1

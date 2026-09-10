@@ -20,6 +20,7 @@ pathalg/
   examples.py   Dynkin and Hadamard squares, ready to use
 demo.py         a worked example, start to finish
 ah_demo.py      the Asaeda-Haagerup square of S1122.txt, same shape as demo.py
+                (from arXiv:2509.00227, section 5)
 test_pathalg.py the test suite (python test_pathalg.py [--slow])
 ```
 
@@ -230,8 +231,10 @@ Rough exact timings (this machine): `A_3` at `n = 3` all checks ≈ 20s, all
 relative commutants ≈ instant. With `backend="numpy"`, `A_4` at `n = 4`
 (`dim H_5 = 21`) ≈ 8s.
 
-For the Asaeda-Haagerup square of `ah_demo.py`, `dim A_(0,1)' cap A_(n,0)`,
-on an RTX 4070 SUPER:
+For the Asaeda-Haagerup square of `ah_demo.py` — the `S(1,1,2,2)` case of the
+one-parameter family of connections on 4-stars in §5 of Bisch–Cáceres, *[New
+hyperfinite subfactors with infinite depth](https://arxiv.org/abs/2509.00227)*,
+arXiv:2509.00227 — `dim A_(0,1)' cap A_(n,0)`, on an RTX 4070 SUPER:
 
 | n | dim H_(n+1) | k | numpy | cupy | cupy64 |
 | --- | --- | --- | --- | --- | --- |
