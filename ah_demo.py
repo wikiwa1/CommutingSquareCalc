@@ -60,7 +60,7 @@ import time
 
 import sympy as sp
 
-from pathalg import CommutingSquare, Level, gpu_available
+from pathalg import CommutingSquare, InsufficientMemory, Level, gpu_available
 
 # ------------------------------------------------------------------- 0. knobs
 
@@ -88,10 +88,18 @@ BACKEND = "auto"
 LEVEL_N = 2
 
 # Higher relative commutants are computed for n = 1 .. MAX_N.  Cost grows fast:
-# dim H_(n+1) runs 10, 28, 44, 128, 200, 584 and the outer commutant that gets
-# cut down has dimension 6, 22, 96, 434, 1976, 9010.  n = 7 does not fit in
-# memory under any backend -- see the README.
-MAX_N = 6
+# dim H_(n+1) runs 10, 28, 44, 128, 200, 584, 912, 2664 and the outer commutant
+# that gets cut down has dimension 6, 22, 96, 434, 1976, 9010, 41096, 187458.
+# Up to n = 6 that is done densely; from n = 7 the library switches by itself
+# to an iterative method that never forms the big matrix (see the README).
+# Anything that would not fit is refused before it allocates, and the table
+# says so instead of crashing.
+MAX_N = 8
+
+# When a level does not fit on the GPU, retry it on the CPU if it fits in RAM
+# there.  Same answer, but the CPU is one to two orders of magnitude slower,
+# so a level that is minutes on the card can be hours here.
+CPU_FALLBACK = True
 
 
 # ------------------------------------------------- 1. the parameters of S1122
@@ -206,6 +214,40 @@ def closed_walks(edges, start, length):
     return int((adj ** length)[index[start], index[start]])
 
 
+def higher_relative_commutant(square, n, backend, block=None):
+    """``(level, dim A_(0,1)' cap A_(n,0))``, falling back to the CPU if allowed.
+
+    Raises :class:`pathalg.InsufficientMemory` -- before allocating anything --
+    when the computation fits nowhere it is allowed to run.
+    """
+
+    def progress(p):
+        # one status line, rewritten in place each round of the iterative method
+        print(f"    {n:>3}  ... round {p['round']}: {p['found']} found so far, "
+              f"block {p['block']}, next cosine {p['next']:.4f}, "
+              f"{p['seconds']:.0f}s", end="\r", flush=True)
+
+    def compute(lv):
+        try:
+            return lv.relative_commutant_dimension((0, 1), (n, 0), block=block,
+                                                   progress=progress)
+        finally:
+            print(" " * 78, end="\r", flush=True)  # clear the status line
+
+    lv = Level(square, n, backend=backend)
+    try:
+        return lv, compute(lv)
+    except InsufficientMemory as exc:
+        if not (CPU_FALLBACK and lv.backend.device == "GPU"):
+            raise
+        print(f"    {n:>3}  does not fit on the GPU ({exc.needed / 1e9:.1f} GB needed, "
+              f"{exc.available / 1e9:.1f} GB free); retrying on the CPU, "
+              "which is much slower")
+        del lv
+        lv = Level(square, n, backend="numpy")
+        return lv, compute(lv)
+
+
 def main():
     backend = BACKEND
     if backend == "auto":
@@ -312,21 +354,34 @@ def main():
     print("  unambiguous as long as those two stay far apart.")
     print()
     header = ("n", "dim H_(n+1)", "dim A01' cap An0", "Catalan(n)",
-              "walks at A", "margin", "time")
-    print("    {:>3}  {:>11}  {:>16}  {:>10}  {:>10}  {:>17}  {:>8}".format(*header))
+              "walks at A", "margin", "time", "method")
+    print("    {:>3}  {:>11}  {:>16}  {:>10}  {:>10}  {:>17}  {:>8}  {}".format(*header))
+    previous = None
     for n in range(1, MAX_N + 1):
+        # the iterative method wants a starting block bigger than the answer;
+        # these dimensions grow by a factor of about 3.3 per level
+        block = None if previous is None else int(3.6 * previous) + 16
         start = time.time()
-        lv = Level(square, n, backend=backend)
-        dim = lv.span_dimension(lv.relative_commutant_in((0, 1), (n, 0)))
+        try:
+            lv, dim = higher_relative_commutant(square, n, backend, block)
+        except InsufficientMemory as exc:
+            print(f"    {n:>3}  skipped: {exc}")
+            break  # every larger n needs more still
         elapsed = time.time() - start
+        previous = dim
         flat = closed_walks(EDGES_TOP, "A", 2 * n)
         mark = ""
         if n >= 5:
             mark = "  <- A_infinity" if dim == catalan(n) else "  <- branches"
         lo, hi = getattr(lv, "_last_angle_gap", (0.0, 1.0))
+        info = getattr(lv, "_last_intersection", {})
+        how = info.get("method", "-")
+        if lv.backend.name != "cupy" and backend.startswith("cupy"):
+            how += " (CPU)"
         print(f"    {n:>3}  {len(lv.H.paths):>11}  {dim:>16}"
               f"  {catalan(n):>10}  {flat:>10}  {lo:.4f} / {hi:.6f}"
-              f"  {elapsed:6.1f}s{mark}")
+              f"  {elapsed:7.1f}s  {how}{mark}")
+        del lv
 
     if MAX_N < 5:
         print()

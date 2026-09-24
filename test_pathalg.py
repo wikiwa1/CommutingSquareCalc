@@ -432,6 +432,163 @@ def test_asaeda_haagerup_sequence():
             )
 
 
+def test_angle_maps_are_adjoint():
+    """``<c, F a> = <F* c, a>``: the two halves of the iterative route agree."""
+    import numpy as np
+
+    import ah_demo
+
+    lv = Level(ah_demo.ah_square(sp.pi / 3, backend="numpy"), 3, backend="numpy")
+    prob = lv._angle_problem((0, 1), (3, 0))
+    rng = np.random.default_rng(0)
+    a = rng.standard_normal((prob.k, 4)) + 1j * rng.standard_normal((prob.k, 4))
+    c = rng.standard_normal((prob.width, 4)) + 1j * rng.standard_normal((prob.width, 4))
+    lhs = np.vdot(c, lv._angle_forward(prob, a))
+    rhs = np.vdot(lv._angle_backward(prob, c), a)
+    check(abs(lhs - rhs) <= 1e-12 * abs(lhs), f"F and F* disagree: {lhs} vs {rhs}")
+
+
+def test_unit_eigenspace_recovers_known_subspace():
+    """A spectrum with a known eigenvalue 1 block, starting from too small a block."""
+    import numpy as np
+
+    from pathalg.backend import get_backend
+    from pathalg.eigen import unit_eigenspace
+
+    rng = np.random.default_rng(1)
+    k, r = 400, 40
+    Q, _ = np.linalg.qr(rng.standard_normal((k, k)) + 1j * rng.standard_normal((k, k)))
+    N = (Q * np.concatenate([np.ones(r), rng.uniform(0, 0.9, k - r)])) @ Q.conj().T
+    be = get_backend("numpy")
+    X, info = unit_eigenspace(lambda V: N @ V, k, be, cut=(1 - be.tol) ** 2,
+                              block=16, chunk=32)
+    check(X.shape[1] == r, f"found {X.shape[1]} directions, expected {r}")
+    err = np.linalg.norm(Q[:, :r] @ Q[:, :r].conj().T - X @ X.conj().T, 2)
+    check(err < 1e-6, f"wrong subspace, projector error {err:.1e}")
+    check(info["block"] > 16, "the block should have had to grow")
+
+
+def test_iterative_matches_dense():
+    """The iterative route gives the dense route's dimension and margin."""
+    import ah_demo
+
+    cases = [(dynkin_A(4), (1, 2, 3, 4)), (hadamard(fourier_matrix(3)), (1, 2, 3)),
+             (ah_demo.ah_square(sp.pi / 3, backend="numpy"), (3, 4, 5) if SLOW else (3, 4))]
+    for sq, ns in cases:
+        for n in ns:
+            dense = Level(sq, n, backend="numpy")
+            iterative = Level(sq, n, backend="numpy")
+            a = dense.relative_commutant_dimension((0, 1), (n, 0), method="dense")
+            b = iterative.relative_commutant_dimension((0, 1), (n, 0),
+                                                       method="iterative", block=32)
+            check(a == b, f"n={n}: dense gives {a}, iterative gives {b}")
+            check(abs(dense._last_angle_gap[0] - iterative._last_angle_gap[0]) < 1e-4,
+                  f"n={n}: margins differ, {dense._last_angle_gap} vs "
+                  f"{iterative._last_angle_gap}")
+            # and the dimension-only call agrees with building the basis
+            basis = iterative.relative_commutant_in((0, 1), (n, 0))
+            check(iterative.span_dimension(basis) == b,
+                  f"n={n}: the basis spans {iterative.span_dimension(basis)}, not {b}")
+
+
+def test_memory_refusal():
+    """Too little memory is refused up front; enough for iterative only picks it."""
+    import ah_demo
+    from pathalg import ArrayBackend, InsufficientMemory
+
+    sq = ah_demo.ah_square(sp.pi / 3, backend="numpy")
+    sub, amb = (0, 1), (4, 0)
+
+    def level_with(free):
+        be = ArrayBackend()
+        be.free_memory = lambda: free
+        return Level(sq, 4, backend=be)
+
+    probe = level_with(None)
+    prob = probe._angle_problem(sub, amb)
+    dense = probe._memory_plan(prob, sub, amb, "dense", None)[1]
+    small = probe._memory_plan(prob, sub, amb, "iterative", 4)[1]
+    grown = probe._iterative_bytes(prob, 20)  # the first growth from a block of 4
+    check(small < grown < dense, "the estimates are not ordered as this test assumes")
+
+    try:
+        level_with(1e6).relative_commutant_dimension(sub, amb)
+        check(False, "1 MB should have been refused")
+    except InsufficientMemory as exc:
+        check(exc.needed and exc.available == 1e6, "refusal carries no numbers")
+
+    lv = level_with((small + dense) / 2 / 0.85)  # iterative fits, dense does not
+    check(lv.relative_commutant_dimension(sub, amb, block=32) == 14, "wrong dimension")
+    check(lv._last_intersection["method"] == "iterative", "should have gone iterative")
+
+    # room for the first block but not for growing it: the answer (14) is
+    # bigger than a block of 4, so the refusal has to come mid-computation
+    try:
+        level_with((small + grown) / 2 / 0.85).relative_commutant_dimension(
+            sub, amb, method="iterative", block=4)
+        check(False, "growing the block should have been refused")
+    except InsufficientMemory:
+        pass
+
+
+def test_intersection_same_parameter():
+    """s' = s: C_n is all of A_{n,0}, no angles, and ||Lambda||^2 = delta^2."""
+    import ah_demo
+    from pathalg.intersection import LevelPair, analyse
+
+    sq = ah_demo.ah_square(sp.pi / 3, backend="numpy")
+    res = analyse(LevelPair(sq, ah_demo.ah_square(sp.pi / 3, backend="numpy"), 3))
+    delta2 = float(sp.N(ah_demo.DELTA ** 2))
+    for r in res.records:
+        check(r.spectrum.dim_intersection == r.spectrum.dim,
+              f"p={r.p}: C_p has dim {r.spectrum.dim_intersection}, not {r.spectrum.dim}")
+        check(not r.spectrum.distinct, f"p={r.p}: angles strictly inside (0, 1)")
+        check(abs(r.index_estimate - delta2) < 1e-9,
+              f"p={r.p}: ||Lambda||^2 = {r.index_estimate}, expected {delta2}")
+
+
+def test_intersection_hadamard_theorem_B():
+    """Bakshi-Guin-Guruprasad, arXiv:2510.14499, Theorem B: index N^2 / |H|.
+
+    ``R_U cap R_V`` for U = F_4 and V = D U is a factor of index 16 / |H| in R,
+    |H| = dim(Ad_U(Delta) cap Ad_V(Delta)) = dim C_1.  Here V = D U is the
+    library's Hadamard matrix F_4 D (the library's matrix is the paper's U*).
+    """
+    from pathalg.intersection import LevelPair, analyse
+
+    F = fourier_matrix(4)
+    for d, want_h in (([1, 1, 1, -1], 1), ([1, 1, -1, -1], 2), ([1, 1, sp.I, sp.I], 1)):
+        pair = LevelPair(hadamard(F, backend="numpy"),
+                         hadamard(F * sp.diag(*d), backend="numpy"), 3)
+        res = analyse(pair)
+        h = res.records[0].spectrum.dim_intersection
+        check(h == want_h, f"D={d}: |H| = {h}, expected {want_h}")
+        counts = [len(r.spectrum.distinct) for r in res.records]
+        check(len(set(counts)) == 1, f"D={d}: the spectrum grows: {counts}")
+        for r in res.records:
+            check(abs(r.index_estimate - 16 / h) < 1e-9,
+                  f"D={d} p={r.p}: ||Lambda||^2 = {r.index_estimate}, expected {16 / h}")
+        check(res.records[-1].dobrushin < 1e-9, f"D={d}: not ergodic")
+
+
+def test_angle_spectra_are_nested():
+    """Every eigenvalue of T_p is an eigenvalue of T_(p+1): L^2(A_p1) reduces T."""
+    import numpy as np
+
+    import ah_demo
+    from pathalg.intersection import LevelPair
+
+    pair = LevelPair(ah_demo.ah_square(sp.pi / 3, backend="numpy"),
+                     ah_demo.ah_square(sp.pi / 2, backend="numpy"), 3)
+    specs = [pair.angle_spectrum(p) for p in (1, 2, 3)]
+    for a, b in zip(specs, specs[1:]):
+        big = np.asarray([v for v, _ in b.distinct])
+        for v, _ in a.distinct:
+            check(np.abs(big - v).min() < 1e-10,
+                  f"eigenvalue {v} of level {a.p} missing at level {b.p}")
+        check(b.dim_intersection >= a.dim_intersection, "C_p shrank")
+
+
 def test_gpu_matches_cpu():
     """Same dimensions from the GPU, in both precisions, or skip if no cupy."""
     backends = _array_backends()
@@ -509,6 +666,13 @@ TESTS = [
     test_exact_nullspace_agrees_with_sympy,
     test_intersection_routes_agree,
     test_asaeda_haagerup_sequence,
+    test_angle_maps_are_adjoint,
+    test_unit_eigenspace_recovers_known_subspace,
+    test_iterative_matches_dense,
+    test_memory_refusal,
+    test_intersection_same_parameter,
+    test_intersection_hadamard_theorem_B,
+    test_angle_spectra_are_nested,
     test_gpu_matches_cpu,
 
     test_slow_exact_higher_relative_commutants,

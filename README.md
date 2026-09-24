@@ -16,11 +16,15 @@ pathalg/
   weights.py    exact Perron-Frobenius weights
   paths.py      path spaces, block operators, block maps
   tower.py      one level: W, the three algebras, trace, e_k, E, commutants
+  eigen.py      eigenvalue 1 subspace of a positive contraction, matrix free
+  intersection.py  two members of a family: angle spectrum, N_s cap N_t
   backend.py    exact (sympy) and numerical (numpy) arithmetic
   examples.py   Dynkin and Hadamard squares, ready to use
 demo.py         a worked example, start to finish
 ah_demo.py      the Asaeda-Haagerup square of S1122.txt, same shape as demo.py
                 (from arXiv:2509.00227, section 5)
+s1133_demo.py   the same for the 4-star S(1,1,3,3), index 3 + sqrt(3)
+intersection_demo.py  N_s cap N_s' for two members of a family (see below)
 test_pathalg.py the test suite (python test_pathalg.py [--slow])
 ```
 
@@ -152,6 +156,7 @@ lv.jones(j)                          # e_j implementing E_{A_{j-1,1}} on A_{j,1}
 lv.jones_H(k) / lv.jones_K(k)        # by path length instead
 lv.relative_commutant(p, q)          # basis of A_{p,q}' cap A_{n,1}
 lv.relative_commutant_in(sub, amb)   # e.g. ((0,1), (n,0)), Ocneanu compactness
+lv.relative_commutant_dimension(sub, amb)   # the same, dimension only: no basis built
 lv.commutant_of(ops)                 # brute force, for an arbitrary set
 lv.span_dimension(ops) / lv.in_span(x, ops) / lv.generated_algebra(ops) / lv.center(b)
 lv.to_K(x) / lv.to_H(x)              # move between the two pictures
@@ -225,6 +230,46 @@ against 1.0.
 The whole route is checked against the older `k x k` Gram cut-down, which is
 still what the exact backend uses, in `test_intersection_routes_agree`.
 
+### Iterative route and memory
+
+The dense route above stores `B`, and at `n = 7` that is 28.5 GB. But nothing
+needs `B` itself, only the eigenvalue 1 eigenspace of `N = F* F`, where
+`F a` is the coordinates of `E(sum a_i u_i)`. Its dimension is the answer,
+which is small. [pathalg/eigen.py](pathalg/eigen.py) finds it by
+Chebyshev-filtered subspace iteration (Zhou–Saad): a block of vectors
+somewhat larger than the answer is repeatedly multiplied by a Chebyshev
+polynomial in `N`, small on `[0, a]` and large at 1, then re-orthonormalised
+and Rayleigh–Ritz projected. `F` and `F*` are applied on the fly with the same
+steps that build `B`:
+
+- `F`: assemble `sum a_i u_i` from its sparse entries, conjugate it by `W`,
+  and take the partial trace;
+- `F*`: assemble the element of `A_amb`, pull it back through `W`, and pair it
+  with each `u_i` (a sparse lookup).
+
+Memory is two `k x block` arrays plus one chunk: the Rayleigh–Ritz rotation
+and the re-orthonormalisation (CholeskyQR2) both work in place, whereas the
+library QR alone would hold three blocks. Two details matter:
+
+- the amplification per filter pass is capped near `1/sqrt(eps)`, since
+  otherwise the rest of the block drops below rounding error and comes back as
+  noise. The cap also keeps the block well conditioned enough for Cholesky QR;
+- it stops when the wanted vectors have converged and the first unwanted Ritz
+  value has settled. That value would still be climbing if an eigenvalue 1
+  direction were missing.
+
+If every vector in the block heads for 1, the block grows.
+
+`method="auto"` (the default) chooses per call. Before allocating anything it
+estimates each route's peak memory and compares it with what is free: GPU
+memory under cupy, *physical* RAM otherwise, never counting the page file.
+Dense is used if it fits, iterative if only that fits, and otherwise it raises
+`pathalg.InsufficientMemory` with both estimates and the free amount. Growing
+the iterative block is checked the same way. `relative_commutant_dimension`
+never builds the basis, so counting costs no more than the eigenspace itself.
+Pass `method="iterative"` to force it; at `n = 6` it is also the faster of the
+two. `test_iterative_matches_dense` and `test_memory_refusal` cover both.
+
 ### Timings
 
 Rough exact timings (this machine): `A_3` at `n = 3` all checks ≈ 20s, all
@@ -236,26 +281,80 @@ one-parameter family of connections on 4-stars in §5 of Bisch–Cáceres, *[New
 hyperfinite subfactors with infinite depth](https://arxiv.org/abs/2509.00227)*,
 arXiv:2509.00227 — `dim A_(0,1)' cap A_(n,0)`, on an RTX 4070 SUPER:
 
-| n | dim H_(n+1) | k | numpy | cupy | cupy64 |
-| --- | --- | --- | --- | --- | --- |
-| 5 | 200 | 1976 | 9.7s | 0.9s | 0.4s |
-| 6 | 584 | 9010 | 815s | 50s | 5.0s |
+| n | dim H_(n+1) | k | dim | dense numpy | dense cupy | dense cupy64 | iterative cupy64 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 5 | 200 | 1976 | 42 | 9.7s | 0.9s | 0.4s | |
+| 6 | 584 | 9010 | 132 | 815s | 50s | 5.0s | 0.6s |
+| 7 | 912 | 41096 | 429 | needs ~85 GB | needs ~85 GB | needs ~43 GB | 10.7s (1.2 GB) |
+| 8 | 2664 | 187458 | 1430 | needs ~2.2 TB | needs ~2.2 TB | needs ~1.1 TB | 157s (5.6 GB) |
 
 `k` is the dimension of the outer commutant that gets cut down. The `cupy` /
 `cupy64` gap is the card: consumer GeForce parts run `float64` at 1/64 rate, so
 `complex128` matmul measures 524 GFLOP/s against 12.3 TFLOP/s for `complex64`.
 Single precision is safe here because every decision is that principal angle,
-and 0.89 against 1.0 is nowhere near seven digits.
+and 0.96 against 1.0 is nowhere near seven digits.
 
-`n = 7` is out of reach by any backend: `k = 41096` and `dim A_(7,0) = 86560`,
-so `B` alone is 28 GB in `complex64`. Getting there needs a matrix free method
-for the smallest eigenspace, storing `k x r` rather than `k x k`.
+## Intersections of two members of a family
+
+Every connection on the same four graphs gives a subfactor `N_s` of one and the
+same `M`. In the `H` picture the tower `A_{n,1}` and its Jones projections do
+not depend on the connection, which only moves `A_{n,0}^(s) = W_s^* (K) W_s`.
+So `P cap Q = N_s cap N_t` makes sense, as for the Hadamard subfactors of
+Bakshi–Guin–Guruprasad, [arXiv:2510.14499](https://arxiv.org/abs/2510.14499).
+[pathalg/intersection.py](pathalg/intersection.py) reduces it to finite
+dimensions, exactly:
+
+- **The angle operator.** `E_{N_s}(A_{n,1}) = A_{n,0}^(s)`, so `L^2(A_{n,1})`
+  reduces both Jones projections. The restriction `T_n` of
+  `T = e_P e_Q e_P` has `spec(T_n)` inside `spec(T)`, the `spec(T_n)` increase
+  with `n`, and their union is dense in `spec(T)`. So the spectrum is
+  approximated exactly from below: `LevelPair.angle_spectrum(p)` gives the
+  squared singular values of the cross-Gram matrix of the two `A_{p,0}`.
+- **The intersection.** `E_{P cap Q}(A_{n,1}) = C_n = A_{n,0}^(s) cap A_{n,0}^(t)`,
+  and `P cap Q` is generated by the `C_n`. The paper's
+  `Ad_U(Delta) cap Ad_V(Delta)` is `C_1`. `LevelPair.intersection(p)` gives
+  `C_p` with its centre, blocks and trace.
+- **Factoriality.** The centre of `P cap Q` is the space of bounded harmonic
+  functions of the Markov chain the trace defines on the Bratteli diagram of
+  the `C_n`. `analyse` reports the Dobrushin coefficient of that chain and the
+  diagram's connected components. A component reaching every level carries a
+  projection central in every `C_n`.
+- **Index.** If `[M : P cap Q] < oo`, then `e_P` and `e_Q` lie in a
+  finite-dimensional relative commutant and the spectrum is finite. A growing
+  number of distinct eigenvalues rules finite index out. That number is a
+  certified lower bound whenever the gaps between them exceed the rounding
+  error, which is about `1e-13` in double precision.
+  `||Lambda(C_n < A_{n,1})||^2` is also reported. It equals the index at every
+  level in every finite-index case checked, and growth points to infinite
+  index.
+
+Validated on the subfactor itself (`s = t`: `C_n = A_{n,0}`, `||Lambda||^2 = delta^2`),
+and against the paper's Theorem B (`U = F_4`, `V = D U`, which is `F_4 D` in
+this library's convention): `|H| = dim C_1`, the index `16 / |H|` at every
+level, a finite spectrum, and a factor.
+
+For S(1,1,2,2), `s = pi/3` against every `s'` tried:
+- `dim C_n` is 6, 16, 47, 146, 471, the same for all `s' != s`;
+- the number of distinct angles is 3, 6, 13, 30, 62, with gaps of at least
+  `2.6e-5`;
+- `||Lambda||^2` grows by about 2.1–2.3 per level;
+- the diagram splits at every level into `p_{d2}` and `p_A + p_{a2}`, the
+  minimal central projections of `A_{0,0}`.
+
+Through `n = 5`, that is the pattern of an infinite-index intersection with
+the central projection `p_{d2}`: evidence, not a proof. The largest angle
+cosine below 1 depends on `s'` (0.9817 for `s' = pi/2`) and has not moved
+since `n = 1` there.
+
+Dense levels in double precision: `n = 5` takes 18 s on the GPU with
+`backend="cupy"`. `LevelPair.angle_top` goes further without forming the
+cross-Gram matrix, but only gives `dim C_n` and the largest angle below 1.
 
 ## Tests
 
 ```
-python test_pathalg.py            # 23 tests, ~100s
-python test_pathalg.py --slow     # adds the heavy exact A_4 cases
+python test_pathalg.py            # 33 tests, ~2 minutes
+python test_pathalg.py --slow     # adds the heavy exact A_4 cases and AH n = 5
 ```
 
 The ones with an answer from outside the library:

@@ -17,7 +17,14 @@ Quick start::
     lv.relative_commutant(0, 1)                  # basis of A_{0,1}' cap A_{3,1}
 """
 
-from .backend import ArrayBackend, NumpyBackend, SympyBackend, get_backend, gpu_available
+from .backend import (
+    ArrayBackend,
+    InsufficientMemory,
+    NumpyBackend,
+    SympyBackend,
+    get_backend,
+    gpu_available,
+)
 from .paths import BlockMap, Op, PathSpace
 from .square import CheckResult, CommutingSquare, Graph
 from .tower import Level
@@ -36,5 +43,6 @@ __all__ = [
     "NumpyBackend",
     "get_backend",
     "gpu_available",
+    "InsufficientMemory",
     "pf_bipartite",
 ]

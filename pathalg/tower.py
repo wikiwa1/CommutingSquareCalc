@@ -46,14 +46,30 @@ is trace preserving.
 from __future__ import annotations
 
 import itertools
+import time
+from types import SimpleNamespace
 
 import sympy as sp
 
-from .backend import get_backend
+from .backend import InsufficientMemory, get_backend
+from .eigen import unit_eigenspace
 from .paths import BlockMap, Op, PathSpace
 from .square import CheckResult
 
 __all__ = ["Level"]
+
+# How much of a stack of dense blocks to push through the connection at once.
+# It bounds the working memory of both principal angle routes, independently of
+# how many operators there are in total.
+_STACK_BYTES = 256e6
+
+# Fraction of the free memory a computation may plan to use; the rest is slack
+# for fragmentation, temporaries this accounting does not see, and the rest of
+# the process.
+_MEMORY_SAFETY = 0.85
+
+# Starting block for the iterative route when the caller gives no hint.
+_DEFAULT_BLOCK = 256
 
 
 class _SpanTracker:
@@ -189,7 +205,10 @@ class Level:
         self.moves = [self._move(k) for k in range(n)]
         self.W = self._build_W()
         self._commutant_cache = {}
+        self._angle_cache = {}
         self._exp_plans = {}
+        self._exp_scalars = {}
+        self._WH = None
 
     # ------------------------------------------------------------------ set-up
     def _check_block_shapes(self):
@@ -503,7 +522,8 @@ class Level:
         """
         return self.relative_commutant_in((p, q), (self.n, 1))
 
-    def relative_commutant_in(self, sub, ambient):
+    def relative_commutant_in(self, sub, ambient, method="auto", block=None,
+                              progress=None):
         """A basis of ``A_sub' \\cap A_ambient``, both given as ``(p, q)`` pairs.
 
         ``relative_commutant_in((0, 1), (n, 0))`` is the object in Ocneanu's
@@ -511,14 +531,68 @@ class Level:
         the commuting square generates.
 
         When both algebras are levels of the same path space the cheap basis
-        above is used; otherwise (the interesting mixed case, where one lives in
-        the ``H`` picture and the other in the ``K`` picture) it falls back to a
-        linear solve over the ambient matrix units.
+        above is used.  Otherwise (the interesting mixed case, where one lives
+        in the ``H`` picture and the other in the ``K`` picture) the array
+        backends intersect two subspaces by principal angles, and ``method``
+        and ``block`` choose how -- see :meth:`relative_commutant_dimension`,
+        which is the call to use when only the dimension is wanted, since it
+        never builds the basis.
         """
         key = (tuple(sub), tuple(ambient))
         if key in self._commutant_cache:
             return self._commutant_cache[key]
 
+        route = self._commutant_route(sub, ambient)
+        if route[0] == "cheap":
+            _, space, m, upto = route
+            basis = self._relative_commutant_on(space, m, upto)
+            if space is self.K:
+                basis = [self.W.pull_back(g) for g in basis]
+        elif route[0] == "angles":
+            basis = self._angle_result(sub, ambient, method, block, progress).operators()
+        else:
+            # Mixed pictures under the exact backend.  Rather than solve the
+            # commutation relations against a basis of the ambient -- one
+            # operator product per (ambient generator, sub generator) pair --
+            # cut down the commutant inside A_{n,1}, which does have the cheap
+            # basis, by
+            #
+            #     A_sub' cap A_amb = { x in A_sub' cap A_{n,1} : E_amb(x) = x }
+            #
+            # using that a trace preserving expectation fixes exactly its own
+            # range.
+            outer = self.relative_commutant_in(sub, (self.n, 1))
+            basis = self._cut_down_by_expectation(outer, ambient)
+        self._commutant_cache[key] = basis
+        return basis
+
+    def relative_commutant_dimension(self, sub, ambient, method="auto", block=None,
+                                     progress=None):
+        """``dim A_sub' \\cap A_ambient``, building the basis only if it must.
+
+        For the higher relative commutants under an array backend the answer
+        comes out of the principal angle computation as an orthonormal set of
+        coefficient vectors, so the dimension is read off directly and the
+        basis operators -- 1.35 GB of them at ``n = 7`` for the Asaeda-Haagerup
+        square -- are never materialised.
+
+        ``method`` is ``"dense"``, ``"iterative"`` or ``"auto"``.  Dense forms a
+        ``k x dim A_ambient`` matrix and is the fast choice while it fits;
+        iterative (:func:`pathalg.eigen.unit_eigenspace`) only ever holds a few
+        blocks of ``k x block`` vectors.  ``"auto"`` picks dense when it fits
+        in free memory, iterative when only that fits, and otherwise raises
+        :class:`~pathalg.InsufficientMemory` before allocating anything.
+        ``block`` is the iterative method's starting block size, which should
+        exceed the expected dimension; it grows if it does not.  ``progress``,
+        if given, is called once per iterative round with a dict describing it
+        (see :func:`pathalg.eigen.unit_eigenspace`).
+        """
+        if self._commutant_route(sub, ambient)[0] == "angles":
+            return self._angle_result(sub, ambient, method, block, progress).dim
+        return self.span_dimension(self.relative_commutant_in(sub, ambient))
+
+    def _commutant_route(self, sub, ambient):
+        """Which algorithm ``A_sub' cap A_ambient`` goes to."""
         sub_space, sub_m = self._space_and_level(*sub)
         amb_space, amb_m = self._space_and_level(*ambient)
         if amb_space is not sub_space and tuple(ambient) == (self.n, 1):
@@ -527,29 +601,10 @@ class Level:
             # the cheap path
             amb_space, amb_m = sub_space, sub_space.L
         if sub_space is amb_space and sub_m <= amb_m:
-            basis = self._relative_commutant_on(sub_space, sub_m, amb_m)
-            if sub_space is self.K:
-                basis = [self.W.pull_back(g) for g in basis]
-        else:
-            # Mixed pictures (one algebra read off H, the other off K).  Rather
-            # than solve the commutation relations against a basis of the
-            # ambient -- which costs one operator product per (ambient
-            # generator, sub generator) pair and is by far the slowest thing in
-            # the library -- cut down the commutant inside A_{n,1}, which does
-            # have the cheap basis, by
-            #
-            #     A_sub' cap A_amb = { x in A_sub' cap A_{n,1} : E_amb(x) = x }
-            #
-            # using that a trace preserving expectation fixes exactly its own
-            # range.  That is one expectation per basis element, and the basis
-            # is small.
-            if getattr(self.backend, "array", False) and sub_space is self.H:
-                basis = self._intersect_by_angles(sub, ambient)
-            else:
-                outer = self.relative_commutant_in(sub, (self.n, 1))
-                basis = self._cut_down_by_expectation(outer, ambient)
-        self._commutant_cache[key] = basis
-        return basis
+            return ("cheap", sub_space, sub_m, amb_m)
+        if getattr(self.backend, "array", False) and sub_space is self.H:
+            return ("angles",)
+        return ("cutdown",)
 
     def _relative_commutant_on(self, space, m, upto):
         be = self.backend
@@ -657,11 +712,7 @@ class Level:
         block -- the coefficients are all the inner products need, and there are
         ``dim A_{m}`` of them rather than ``dim A_{n,1}``.
         """
-        be, xp = self.backend, self.backend.xp
-        L = space.L
-        Q = be.num(sp.expand(space.P[L] / space.P[m]))
-        mu_end = space.square.mu[space.types[L]]
-        mu_lvl = space.square.mu[space.types[m]]
+        mu_end, denom = self._expectation_scalars(space, m)
         out = []
         for w, prefixes, per_end in self._expectation_plan(space, m):
             acc = None
@@ -669,13 +720,31 @@ class Level:
                 B = stack.get(y)
                 if B is None:
                     continue
-                gathered = B[:, idx[:, None, :], idx[None, :, :]].sum(axis=3)
-                term = xp.asarray(be.num(mu_end[y]), dtype=be.dtype) * gathered
+                term = mu_end[y] * B[:, idx[:, None, :], idx[None, :, :]].sum(axis=3)
                 acc = term if acc is None else acc + term
             if acc is None:
                 continue
-            out.append((w, acc / xp.asarray(be.num(mu_lvl[w]) * Q, dtype=be.dtype)))
+            out.append((w, acc / denom[w]))
         return out
+
+    def _expectation_scalars(self, space, m):
+        """The weights :meth:`_expectation_coeffs` needs, evaluated once.
+
+        They are sympy expressions, and turning one into a number costs about as
+        much as the array work of a small call -- which the iterative route
+        makes hundreds of times.
+        """
+        key = (id(space), m)
+        cached = self._exp_scalars.get(key)
+        if cached is None:
+            be = self.backend
+            L = space.L
+            Q = be.num(sp.expand(space.P[L] / space.P[m]))
+            mu_end = {y: be.num(v) for y, v in space.square.mu[space.types[L]].items()}
+            mu_lvl = space.square.mu[space.types[m]]
+            denom = {w: be.num(mu_lvl[w]) * Q for w in space.level_blocks[m]}
+            cached = self._exp_scalars[key] = (mu_end, denom)
+        return cached
 
     def _ambient_unit_weights(self, space, m):
         """``||f||^2`` for a matrix unit ``f`` of the level-``m`` algebra, per ``w``."""
@@ -691,58 +760,280 @@ class Level:
             out[w] = be.num(total / (Z0 * space.P[space.L]))
         return out
 
-    def _intersect_by_angles(self, sub, ambient, chunk=None):
-        """``A_sub' cap A_ambient`` via principal angles.  See the note above."""
+    # Both routes below compute the same subspace.  In the orthonormal basis
+    # ~u_i = u_i / ||u_i|| write
+    #
+    #     F : C^k -> C^{dim A_amb},  a |-> coordinates of E(sum a_i ~u_i)
+    #
+    # in an orthonormal basis of A_amb.  Then ||E x|| = ||x|| exactly on the
+    # eigenvalue 1 eigenspace of N = F* F, and N has spectrum in [0, 1]
+    # because E is a projection.  The dense route writes F out as a matrix;
+    # the iterative one only ever applies F and F* to a block of vectors.
+
+    def _intersect_by_angles(self, sub, ambient, method="dense", block=None):
+        """``A_sub' cap A_ambient`` via principal angles, as a list of operators."""
+        return self._angle_result(sub, ambient, method, block).operators()
+
+    def _angle_result(self, sub, ambient, method="auto", block=None, progress=None):
+        """The principal angle computation, cached, without building operators."""
+        key = (tuple(sub), tuple(ambient))
+        res = self._angle_cache.get(key)
+        if res is None or (method != "auto" and res.method != method):
+            prob = self._angle_problem(sub, ambient)
+            chosen, estimate = self._memory_plan(prob, sub, ambient, method, block)
+            start = time.time()
+            if prob.k == 0:
+                coeffs, gap, info = prob.backend.zeros(0, 0), (0.0, 1.0), {}
+            elif chosen == "dense":
+                coeffs, gap, info = self._angle_dense(prob)
+            else:
+                coeffs, gap, info = self._angle_iterative(prob, block, sub, ambient,
+                                                          progress)
+            info = dict(info, method=chosen, k=prob.k, width=prob.width,
+                        seconds=time.time() - start, planned_bytes=estimate)
+            dim = int(coeffs.shape[1])
+            res = self._angle_cache[key] = SimpleNamespace(
+                method=chosen,
+                dim=dim,
+                gap=gap,
+                info=info,
+                # the operators are only built on request: at n = 7 they are
+                # 1.35 GB, and counting them needs none of it
+                operators=lambda: [
+                    self._op_from_cheap_coeffs(prob.sub_space, prob.groups, coeffs[:, j])
+                    for j in range(dim)
+                ],
+            )
+        self._last_angle_gap = res.gap
+        self._last_intersection = res.info
+        return res
+
+    def _angle_problem(self, sub, ambient):
+        """Everything both routes share: index tables, weights, sizes."""
         be, xp = self.backend, self.backend.xp
         sub_space, sub_m = self._space_and_level(*sub)
         amb_space, amb_m = self._space_and_level(*ambient)
         groups, k, gram = self._cheap_basis_groups(sub_space, sub_m)
-        if k == 0:
-            return []
-
         unit = self._ambient_unit_weights(amb_space, amb_m)
-        cols, width = [], 0
+        offsets, width = {}, 0
         for w, prefixes, _ in self._expectation_plan(amb_space, amb_m):
-            cols.append((w, width, len(prefixes) ** 2))
+            offsets[w] = (width, len(prefixes))
             width += len(prefixes) ** 2
+        # 1 / #prefixes for each basis element, for the adjoint map
+        inv_prefixes = []
+        for y, idx, start in groups:
+            inv_prefixes.extend([1.0 / idx.shape[0]] * idx.shape[1] ** 2)
+        itemsize = xp.dtype(be.dtype).itemsize
+        per = max(1, sum(len(b) ** 2 for b in sub_space.blocks.values()))
+        return SimpleNamespace(
+            backend=be,
+            sub_space=sub_space,
+            amb_space=amb_space,
+            amb_m=amb_m,
+            moves=amb_space is not sub_space,
+            groups=groups,
+            k=k,
+            sqrt_gram=xp.sqrt(gram),
+            back_scale=xp.sqrt(gram) * xp.asarray(inv_prefixes, dtype=be.real_dtype),
+            unit_sqrt={w: be.sqrt(v) for w, v in unit.items()},
+            offsets=offsets,
+            width=width,
+            itemsize=itemsize,
+            per_operator=per * itemsize,
+            chunk=max(1, min(max(k, 1), int(_STACK_BYTES / (per * itemsize)))),
+        )
 
-        if chunk is None:
-            # keep one chunk of dense blocks under ~256 MB
-            per = max(1, sum(len(b) ** 2 for b in sub_space.blocks.values()))
-            chunk = max(1, min(k, int(256e6 / (per * xp.dtype(be.dtype).itemsize))))
+    # ----------------------------------------------------------- memory planning
+    def _memory_plan(self, prob, sub, ambient, method, block):
+        """Pick the route that fits, or refuse before allocating anything.
 
-        B = be.zeros(k, width)
-        for lo in range(0, k, chunk):
-            hi = min(k, lo + chunk)
-            stack = self._stack_chunk(sub_space, groups, lo, hi)
-            if amb_space is not sub_space:
+        The estimates count the arrays each route holds at its peak, plus one
+        chunk of dense blocks on its way through the connection (the stack, the
+        product with ``W`` and the result).
+        """
+        be = self.backend
+        k, width, isz = prob.k, prob.width, prob.itemsize
+        work = 3 * _STACK_BYTES + width * prob.chunk * isz
+        # forming B B* holds B and the Gram matrix at once; eigh then needs the
+        # Gram matrix, its eigenvectors and a comparable workspace
+        dense = isz * max(k * width + k * k, 4 * k * k) + work
+        m = min(k, block or _DEFAULT_BLOCK)
+        iterative = self._iterative_bytes(prob, m)
+        free = be.free_memory()
+        if method not in ("auto", "dense", "iterative"):
+            raise ValueError(f"method must be 'auto', 'dense' or 'iterative', not {method!r}")
+
+        if free is None:  # cannot tell; go by size alone
+            if method == "auto":
+                method = "dense" if dense <= 4e9 else "iterative"
+            return method, dense if method == "dense" else iterative
+
+        budget = _MEMORY_SAFETY * free
+        if method == "auto":
+            if dense <= budget:
+                return "dense", dense
+            if iterative <= budget:
+                return "iterative", iterative
+        elif (dense if method == "dense" else iterative) <= budget:
+            return method, dense if method == "dense" else iterative
+
+        need = dense if method == "dense" else iterative
+        raise InsufficientMemory(
+            f"A_{tuple(sub)}' cap A_{tuple(ambient)} at n = {self.n} does not fit: "
+            f"the dense route needs about {dense / 1e9:.1f} GB and the iterative "
+            f"one about {iterative / 1e9:.1f} GB (block of {m}), but only "
+            f"{free / 1e9:.1f} GB of {be.device} is free",
+            needed=need,
+            available=free,
+            device=be.device,
+        )
+
+    def _iterative_bytes(self, prob, m):
+        # two k x m blocks at the peak (pathalg.eigen rotates and
+        # re-orthonormalises in place), a handful of m x m matrices, and a
+        # chunk of dense blocks with its image in C^{dim A_amb}
+        isz = prob.itemsize
+        return isz * (2 * prob.k * m + 6 * m * m) + 3 * _STACK_BYTES + (
+            prob.width * prob.chunk * isz
+        )
+
+    # ---------------------------------------------------------------- the routes
+    def _angle_dense(self, prob):
+        """Write ``F`` out in full and diagonalise ``F F*``."""
+        be, xp = self.backend, self.backend.xp
+        k = prob.k
+        B = be.zeros(k, prob.width)
+        for lo in range(0, k, prob.chunk):
+            hi = min(k, lo + prob.chunk)
+            stack = self._stack_chunk(prob.sub_space, prob.groups, lo, hi)
+            if prob.moves:
                 stack = self._congruence_stack(self.W, stack)
-            for w, C in self._expectation_coeffs(amb_space, stack, amb_m):
-                off = next(o for ww, o, _ in cols if ww == w)
-                scale = xp.asarray(be.sqrt(unit[w]), dtype=be.dtype)
-                B[lo:hi, off : off + C.shape[1] ** 2] = scale * C.reshape(hi - lo, -1)
+            for w, C in self._expectation_coeffs(prob.amb_space, stack, prob.amb_m):
+                off, npre = prob.offsets[w]
+                B[lo:hi, off : off + npre * npre] = prob.unit_sqrt[w] * C.reshape(hi - lo, -1)
             del stack
-        B /= xp.sqrt(gram)[:, None]
+        B /= prob.sqrt_gram[:, None]
 
-        # ||E x|| = ||x|| exactly on the singular value 1 subspace of B, and
-        # every singular value is at most 1 because E is a projection.  Take
-        # that subspace from the eigenvectors of B B*, not from an SVD of B:
-        # the right singular vectors are never used and they are the bulk of
-        # the work, dim A_amb being far larger than k.  Squaring costs half the
-        # digits and there are plenty -- the gap either side of the cut is
-        # reported in _last_angle_gap and is of order 0.1, not of order eps.
-        w, U = xp.linalg.eigh(B @ B.conj().T)
+        # B is the transpose of F.  Take the eigenvalue 1 subspace from the
+        # eigenvectors of B B*, not from an SVD of B: the right singular
+        # vectors are never used and they are the bulk of the work, dim A_amb
+        # being far larger than k.  Squaring costs half the digits and there
+        # are plenty -- the gap either side of the cut is reported and is of
+        # order 0.1, not of order eps.
+        G = B @ B.conj().T
+        del B
+        w, U = xp.linalg.eigh(G)
+        del G
         w = be.to_host(w).real
         cut = (1 - be.tol) ** 2
         first = int((w < cut).sum())  # eigh is ascending
         keep = w.size - first
-        self._last_angle_gap = (
+        gap = (
             float(max(w[first - 1], 0.0)) ** 0.5 if first else 0.0,
             float(max(w[first], 0.0)) ** 0.5 if keep else 1.0,
         )
-        coeffs = U[:, first:].conj() / xp.sqrt(gram)[:, None]
-        return [self._op_from_cheap_coeffs(sub_space, groups, coeffs[:, j])
-                for j in range(keep)]
+        # eigenvectors of B B* = conj(F* F) are the conjugates of those of N
+        coeffs = U[:, first:].conj() / prob.sqrt_gram[:, None]
+        return coeffs, gap, {}
+
+    def _angle_iterative(self, prob, block, sub, ambient, progress=None):
+        """The eigenvalue 1 subspace of ``F* F`` from :func:`unit_eigenspace`."""
+        be = self.backend
+
+        def grow_check(m):
+            free = be.free_memory()
+            need = self._iterative_bytes(prob, m)
+            if free is not None and need > _MEMORY_SAFETY * free:
+                raise InsufficientMemory(
+                    f"A_{tuple(sub)}' cap A_{tuple(ambient)} at n = {self.n}: the "
+                    f"answer has dimension close to {m} or more, and a block that "
+                    f"size needs about {need / 1e9:.1f} GB but only "
+                    f"{free / 1e9:.1f} GB of {be.device} is free",
+                    needed=need,
+                    available=free,
+                    device=be.device,
+                )
+
+        X, info = unit_eigenspace(
+            lambda V: self._angle_backward(prob, self._angle_forward(prob, V)),
+            prob.k,
+            be,
+            cut=(1 - be.tol) ** 2,
+            block=min(prob.k, block or _DEFAULT_BLOCK),
+            chunk=prob.chunk,
+            grow_check=grow_check,
+            progress=progress,
+        )
+        return X / prob.sqrt_gram[:, None], info.pop("gap"), info
+
+    # -------------------------------------------------- F and its adjoint
+    def _angle_forward(self, prob, V):
+        """``F V`` for a ``(k, c)`` block: scatter, through ``W``, partial trace."""
+        be = self.backend
+        c = V.shape[1]
+        stack = self._stack_from_coeffs(prob.sub_space, prob.groups,
+                                        V / prob.sqrt_gram[:, None])
+        if prob.moves:
+            stack = self._congruence_stack(self.W, stack)
+        Z = be.zeros(prob.width, c)
+        for w, C in self._expectation_coeffs(prob.amb_space, stack, prob.amb_m):
+            off, npre = prob.offsets[w]
+            Z[off : off + npre * npre, :] = (prob.unit_sqrt[w] * C.reshape(c, -1)).T
+        return Z
+
+    def _angle_backward(self, prob, Z):
+        """``F* Z``: build the ambient element, pull back through ``W``, pair.
+
+        ``F*`` sends the coordinates of an element ``y`` of ``A_amb`` to the
+        inner products ``<~u_i, y>``; the ``~u_i`` are sums of matrix units with
+        coefficient ``1 / ||u_i||``, so each inner product is a sparse gather.
+        """
+        be = self.backend
+        c = Z.shape[1]
+        space = prob.amb_space
+        stack = {}
+        for w, prefixes, per_end in self._expectation_plan(space, prob.amb_m):
+            off, npre = prob.offsets[w]
+            coeff = (Z[off : off + npre * npre, :].T / prob.unit_sqrt[w]).reshape(c, npre, npre)
+            for y, idx in per_end:
+                Y = stack.get(y)
+                if Y is None:
+                    d = len(space.blocks[y])
+                    Y = stack[y] = be.zeros(c, d, d)
+                Y[:, idx[:, None, :], idx[None, :, :]] = coeff[:, :, :, None]
+        if prob.moves:
+            if self._WH is None:
+                self._WH = self.W.H
+            stack = self._congruence_stack(self._WH, stack)
+        out = be.zeros(prob.k, c)
+        for y, idx, start in prob.groups:
+            Y = stack.get(y)
+            if Y is None:
+                continue
+            T = idx.shape[1]
+            vals = Y[:, idx[:, :, None], idx[:, None, :]].sum(axis=1)  # (c, T, T)
+            out[start : start + T * T, :] = vals.reshape(c, T * T).T
+        # <~u_i, y> = (mu(y) / (Z0 P)) / ||u_i|| * (that sum)
+        #           = ||u_i|| / #prefixes * (that sum)
+        out *= prob.back_scale[:, None]
+        return out
+
+    def _stack_from_coeffs(self, space, groups, A):
+        """``sum_i A[i, j] u_i`` for every column ``j``, as ``{y: (c, d, d)}``."""
+        be = self.backend
+        c = A.shape[1]
+        stack = {}
+        for y, idx, start in groups:
+            T = idx.shape[1]
+            X = stack.get(y)
+            if X is None:
+                d = len(space.blocks[y])
+                X = stack[y] = be.zeros(c, d, d)
+            coeff = A[start : start + T * T, :].T.reshape(c, T, T)
+            # the positions differ for every (prefix, tail, tail), so plain
+            # assignment is safe; the coefficient repeats down the prefixes
+            X[:, idx[:, :, None], idx[:, None, :]] = coeff[:, None, :, :]
+        return stack
 
     def _op_from_cheap_coeffs(self, space, groups, coeffs):
         """``sum_i coeffs[i] u_i`` written straight into its blocks."""

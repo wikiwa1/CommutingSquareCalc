@@ -18,7 +18,15 @@ import cmath
 
 import sympy as sp
 
-__all__ = ["SympyBackend", "ArrayBackend", "NumpyBackend", "get_backend", "gpu_available"]
+__all__ = [
+    "SympyBackend",
+    "ArrayBackend",
+    "NumpyBackend",
+    "InsufficientMemory",
+    "get_backend",
+    "gpu_available",
+    "host_available_memory",
+]
 
 
 class SympyBackend:
@@ -337,6 +345,27 @@ class ArrayBackend:
     def asarray(self, A):
         return self.xp.asarray(A, dtype=self.dtype)
 
+    @property
+    def device(self):
+        """Where the arrays live, for messages: ``"GPU"`` or ``"RAM"``."""
+        return "GPU" if self.name == "cupy" else "RAM"
+
+    def free_memory(self):
+        """Bytes this backend can still allocate, or ``None`` if unknown.
+
+        On the GPU that is the device's free memory plus whatever cupy's pool is
+        holding unused.  On the CPU it is *physical* memory available, not
+        physical plus page file: a computation that only fits by paging to disk
+        is one to refuse, not to start.
+        """
+        if self.name == "cupy":
+            try:
+                free, _ = self.xp.cuda.runtime.memGetInfo()
+                return int(free) + int(self.xp.get_default_memory_pool().free_bytes())
+            except Exception:  # noqa: BLE001
+                return None
+        return host_available_memory()
+
     # ------------------------------------------------------------------ scalars
     def num(self, x):
         if isinstance(x, (int, float, complex)):
@@ -421,6 +450,62 @@ class ArrayBackend:
         if not s.size or s[0] == 0:
             return 0
         return int((s > s[0] * self.tol).sum())
+
+
+class InsufficientMemory(MemoryError):
+    """A computation was refused *before* allocating, because it would not fit.
+
+    ``needed`` and ``available`` are in bytes (``available`` may be ``None``
+    when it could not be determined) and ``device`` is ``"GPU"`` or ``"RAM"``.
+    """
+
+    def __init__(self, message, needed=None, available=None, device=None):
+        super().__init__(message)
+        self.needed = needed
+        self.available = available
+        self.device = device
+
+
+def host_available_memory():
+    """Physical memory available to this process, in bytes, or ``None``."""
+    import os
+    import sys
+
+    if sys.platform == "win32":
+        try:
+            import ctypes
+
+            class _Status(ctypes.Structure):
+                _fields_ = [
+                    ("dwLength", ctypes.c_ulong),
+                    ("dwMemoryLoad", ctypes.c_ulong),
+                    ("ullTotalPhys", ctypes.c_ulonglong),
+                    ("ullAvailPhys", ctypes.c_ulonglong),
+                    ("ullTotalPageFile", ctypes.c_ulonglong),
+                    ("ullAvailPageFile", ctypes.c_ulonglong),
+                    ("ullTotalVirtual", ctypes.c_ulonglong),
+                    ("ullAvailVirtual", ctypes.c_ulonglong),
+                    ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+                ]
+
+            status = _Status()
+            status.dwLength = ctypes.sizeof(_Status)
+            if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+                return int(status.ullAvailPhys)
+        except Exception:  # noqa: BLE001
+            return None
+        return None
+    try:  # Linux: MemAvailable counts reclaimable cache, which free pages do not
+        with open("/proc/meminfo") as fh:
+            for line in fh:
+                if line.startswith("MemAvailable:"):
+                    return int(line.split()[1]) * 1024
+    except OSError:
+        pass
+    try:
+        return int(os.sysconf("SC_AVPHYS_PAGES") * os.sysconf("SC_PAGE_SIZE"))
+    except (AttributeError, ValueError, OSError):
+        return None  # e.g. macOS, which has no portable way to ask
 
 
 # the historical name: numpy at double precision
