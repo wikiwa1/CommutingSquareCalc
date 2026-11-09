@@ -1,0 +1,706 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,caption,enumitem,needspace}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\C}{\mathbb C}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\tr}{\tau}
+\newcommand{\spec}{\operatorname{spec}}
+\newcommand{\ord}{\operatorname{ord}}
+\newcommand{\PP}{\operatorname{PP}}
+\newcommand{\sot}{\mathrm{sot}}
+\captionsetup{font=small,labelfont=bf,skip=6pt,hypcap=false}
+\setlist[enumerate]{itemsep=3pt}
+\setlength{\emergencystretch}{1.5em}
+\renewcommand{\arraystretch}{1.16}
+\title{Intersections of subfactors in a one-parameter\\Hadamard family}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\section{Introduction}
+Two subfactors can each have index \(4\) in the same factor while their
+intersection has a much larger index, or even infinite index. This note
+examines that phenomenon for the one-parameter family of \(4\times4\)
+Hadamard matrices. The guiding questions are: when do two parameters give
+the same subfactor, when do their conditional expectations commute, and
+what determines the index of their intersection?
+
+The answers supplied by Bakshi--Guin are compared with finite-dimensional
+calculations. We first introduce the objects and explain the linear algebra
+behind the computations. We then state the relevant results in the
+parameters \(s,t\) used here and discuss every pair that was calculated.
+The additional \(S(1,1,2,2)\) calculation is treated separately in
+Appendix~\ref{sec:ah}, since its parameters are not governed by the
+Hadamard classification.
+
+The numerical tables illustrate theorems; they are not proofs of
+statements about infinitely many levels. In particular, a sequence which
+grows through five levels need not continue growing indefinitely.
+
+\section{The family and the notation}\label{sec:setup}
+\subsection{The ambient factor and the intersection}
+A \emph{von Neumann algebra} is a unital algebra of bounded operators on a
+Hilbert space, closed under adjoints and under strong operator limits.
+Strong convergence means convergence on each vector. Its \emph{center}
+consists of the elements commuting with every element of the algebra.
+A von Neumann algebra whose center is \(\C1\), the scalar multiples of
+the identity, is called a \emph{factor}. The symbol \(x^*\) denotes
+the adjoint, or the conjugate transpose when \(x\) is a matrix.
+
+Here \(M\) is the hyperfinite type \(\mathrm{II}_1\) factor, with normalized
+trace \(\tr\). Thus \(\tr(1)=1\) and \(\tr(xy)=\tr(yx)\); the trace is
+faithful, so \(\tr(x^*x)=0\) implies \(x=0\). The term \emph{hyperfinite}
+means that \(M\) can be approximated by an increasing sequence of
+finite-dimensional algebras. Unlike a matrix algebra, a type
+\(\mathrm{II}_1\) factor has no nonzero minimal projections.
+A projection is an element \(p=p^*=p^2\); it is minimal if there
+is no projection other than \(0,p\) lying below it.
+A \emph{subfactor} is a unital von Neumann subalgebra that is itself a factor.
+
+For \(r\in\R\), measured in radians, put
+\begin{equation}\label{eq:family}
+ H(r)=
+ \begin{pmatrix}
+ 1&1&1&1\\
+ 1&i e^{ir}&-1&-i e^{ir}\\
+ 1&-1&1&-1\\
+ 1&-i e^{ir}&-1&i e^{ir}
+ \end{pmatrix},
+ \qquad u(r)=\frac12 H(r).
+\end{equation}
+The entries of \(H(r)\) have modulus one and \(H(r)H(r)^*=4I_4\);
+this is the Hadamard condition. Consequently \(u(r)\) is unitary.
+The spin-model construction associates to this matrix a subfactor
+\(N_r\subset M\) of index \(4\). We use the simultaneous realization
+provided by the construction: all the \(N_r\) sit in the \emph{same}
+\(M\). This matters, since an intersection depends on the embeddings,
+not merely on the abstract isomorphism classes of its two members.
+
+Fix \(s,t\in\R\). Our main object and our relative-phase notation are
+\begin{equation}\label{eq:phase}
+ P_{s,t}=N_s\cap N_t,\qquad
+ \Delta=t-s,\qquad \theta=e^{i\Delta},\qquad
+ q=\ord(\theta^2).
+\end{equation}
+The order of a complex number on the unit circle is the least positive
+integer \(j\) for which its \(j\)-th power is \(1\), and is \(\infty\)
+if no such integer exists. Thus
+\begin{equation}\label{eq:denominator}
+ \frac{\Delta}{\pi}=\frac pq,\quad
+ \gcd(|p|,q)=1,\ q>0
+ \quad\Longrightarrow\quad
+ \ord(e^{2i\Delta})=q.
+\end{equation}
+If \(\Delta/\pi\) is irrational, this order is infinite.
+For example, \(\Delta=\pi/3\) gives \(q=3\), whereas \(\Delta=1\)
+gives \(q=\infty\). The latter parameter means one \emph{radian}.
+
+\subsection{Index and conditional expectation}
+For a von Neumann subalgebra \(P\subset M\), let \(E_P:M\to P\) be
+the trace-preserving conditional expectation. It keeps the part of
+an operator belonging to \(P\), characterized by
+\(\tr(y^*E_P(x))=\tr(y^*x)\) for every \(y\in P\).
+On the Hilbert space
+\(L^2(M,\tr)\), obtained by completing \(M\) in the norm
+\(\|x\|_2=\tr(x^*x)^{1/2}\), this map extends to the orthogonal
+projection onto \(L^2(P,\tr)\).
+
+The Jones index \([M:N]\) measures the size of a factor inclusion
+\(N\subset M\); formally it is the dimension of \(L^2(M)\) as an
+\(N\)-module, with dimension measured using the trace. It is not the
+ordinary complex vector-space dimension. To discuss intersections whose
+factoriality has not been established, we use the Pimsner--Popa index:
+\begin{equation}\label{eq:pp}
+ [M:P]_{\PP}
+ =\left(\sup\{c\geq0:E_P(x)\geq c x
+                    \text{ for every }x\in M,\ x\geq0\}\right)^{-1}.
+\end{equation}
+Here \(x\geq0\) means that \(x\) is a positive operator, and \(1/0=\infty\).
+For inclusions of type \(\mathrm{II}_1\) factors this agrees with the
+Jones index. Write \(I(s,t)=[M:P_{s,t}]_{\PP}\).
+This notation does not presume that every \(P_{s,t}\) is a factor.
+
+\section{What a finite-level calculation measures}\label{sec:finite}
+\subsection{The finite algebras}
+The construction gives increasing finite-dimensional algebras
+\[
+ D_n=A_{n,1}\subset M,\qquad
+ B_n(r)=A_{n,0}^{(r)}\subset D_n\quad(n\geq1).
+\]
+The \(D_n\) do not depend on \(r\); the subalgebras \(B_n(r)\) do.
+The notation \(A_{n,j}\) agrees with the implementation; in this note
+\(D_n\) and \(B_n(r)\) make the role of each algebra explicit.
+Their strong closures recover the infinite algebras:
+\[
+ M=\overline{\bigcup_nD_n}^{\,\sot},\qquad
+ N_r=\overline{\bigcup_nB_n(r)}^{\,\sot}.
+\]
+For a fixed pair define
+\begin{equation}\label{eq:finiteintersection}
+ C_n=C_n(s,t)=B_n(s)\cap B_n(t),\qquad
+ b_n=\dim_{\C}B_n(s),\qquad c_n=\dim_{\C}C_n.
+\end{equation}
+In the Hadamard calculation \(b_n=4^n\), for either parameter.
+At the first level \(D_1\cong M_4(\C)\) and \(B_1(r)\cong\C^4\).
+Hence \(b_1=4\), although the containing algebra has dimension \(16\).
+Writing \(\mathcal D_4\) for the diagonal matrices, the starting square
+in the convention of this calculation is
+\[
+ \begin{matrix}
+ u(r)^*\mathcal D_4u(r)&\subset&M_4(\C)\\
+ \cup&&\cup\\
+ \C1&\subset&\mathcal D_4.
+ \end{matrix}
+\]
+The Hadamard condition makes the two expectations onto the
+four-dimensional algebras compose to \(x\mapsto\tr(x)1\).
+The spin-model construction iterates this square by the Jones basic
+construction, adjoining the orthogonal projections associated with the
+inclusions. We take that construction as given; the calculations below
+use its finite algebras and their trace-preserving inclusions.
+
+The compatibility of conditional expectations in this construction gives
+\(E_{N_r}(D_n)=B_n(r)\), and
+\begin{equation}\label{eq:closure}
+ P_{s,t}=\overline{\bigcup_n C_n(s,t)}^{\,\sot}.
+\end{equation}
+This is a property of these towers, not a general rule that an
+intersection commutes with taking closures. One way to see the reason
+is to restrict the two orthogonal projections \(E_{N_s},E_{N_t}\) to
+\(L^2(D_n)\). Alternating the projections converges to the projection
+onto their common range, which at this level is \(C_n\). The compatible
+finite-dimensional restrictions therefore approximate \(E_{P_{s,t}}\).
+
+\subsection{The angle operator}
+Use the inner product \(\langle x,y\rangle=\tr(x^*y)\).
+Let \(e_{s,n},e_{t,n}\) be the orthogonal projections of \(L^2(D_n)\)
+onto \(B_n(s),B_n(t)\), respectively. Define
+\begin{equation}\label{eq:angle}
+ T_n=(e_{s,n}e_{t,n}e_{s,n})\big|_{B_n(s)}.
+\end{equation}
+This is a positive self-adjoint contraction, so its eigenvalues lie
+in \([0,1]\).
+
+\begin{lemma}\label{lem:intersection}
+The eigenspace of \(T_n\) for eigenvalue \(1\) is exactly \(C_n\).
+If \(G_{ij}=\langle f_i,g_j\rangle\), where \((f_i)\) and \((g_j)\)
+are orthonormal bases of \(B_n(s)\) and \(B_n(t)\), then the matrix
+of \(T_n\) is \(GG^*\).
+Moreover, \(S_n=\varnothing\) if and only if \(e_{s,n}\) and
+\(e_{t,n}\) commute, where \(S_n\) denotes the eigenvalues in \((0,1)\).
+\end{lemma}
+\begin{proof}
+For \(x\in B_n(s)\),
+\(\langle x,T_nx\rangle=\|e_{t,n}x\|_2^2\).
+If \(T_nx=x\), equality of the norms of \(x\) and its orthogonal
+projection implies \(e_{t,n}x=x\); thus \(x\in C_n\).
+Conversely, both projections fix every element of \(C_n\).
+Expanding the two projections in the stated orthonormal bases gives
+\((GG^*)_{ik}=\sum_j\langle f_i,g_j\rangle\langle g_j,f_k\rangle\).
+For the last assertion, put \(e=e_{s,n}\) and \(f=e_{t,n}\).
+If \(efe\) has only eigenvalues \(0,1\), it is a projection, and
+\[
+ 0=efe-(efe)^2=ef(1-e)fe=((1-e)fe)^*((1-e)fe).
+\]
+Hence \((1-e)fe=0\), so \(fe=efe=ef\). Conversely, when \(e,f\)
+commute, \(efe=ef\) is a projection.
+\end{proof}
+
+It follows that \(c_n\) is the multiplicity of eigenvalue \(1\).
+The other data we retain are
+\begin{equation}\label{eq:interior}
+ S_n=\spec(T_n)\cap(0,1),\qquad
+ k_n=|S_n|,\qquad \lambda_n=\max S_n\quad(S_n\ne\varnothing).
+\end{equation}
+The set \(S_n\) forgets multiplicities. Thus \(k_n\) counts distinct
+interior eigenvalues, not eigenvectors. We write a dash for
+\(\lambda_n\) when \(S_n=\varnothing\).
+
+\begin{example}\label{ex:lines}
+Take two lines spanned by \((1,0)\) and
+\((\cos\alpha,\sin\alpha)\) in \(\R^2\), where \(0<\alpha<\pi/2\).
+The composition of projections, restricted to the first line, is
+multiplication by \(\cos^2\alpha\). This explains the squared cosines
+in the tables: an interior eigenvalue \(\lambda\) corresponds to a
+principal angle \(\alpha=\arccos\sqrt{\lambda}\). A larger eigenvalue
+means a smaller angle. If \(\lambda<1\) is close to \(1\), the two
+directions are nearly parallel but still have zero intersection.
+\end{example}
+
+The word \emph{interior} in \(S_n\) refers only to the interval \((0,1)\).
+These are the spectral angles of the two projections, not the single
+interior-angle invariant that also occurs in subfactor theory.
+Eigenvalue \(0\) corresponds to a right angle and is deliberately
+omitted. In particular, \(S_n=\varnothing\) means that the two
+projections commute; it does \emph{not} imply that their ranges coincide.
+In the infinite algebra, \emph{commuting} likewise means
+\(E_{N_s}E_{N_t}=E_{N_t}E_{N_s}=E_{P_{s,t}}\), not that every element
+of \(N_s\) commutes with every element of \(N_t\).
+
+\subsection{A calculation at the first level}\label{sec:first}
+\begin{proposition}\label{prop:first}
+With multiplicities included, the eigenvalues of \(T_1\) are
+\[
+ 1,\quad1,\quad1,\quad\cos^2(t-s).
+\]
+Thus \(c_1=4\) if \(t-s\in\pi\Z\), and \(c_1=3\) otherwise.
+\end{proposition}
+\begin{proof}
+In the convention used for the calculation,
+\(B_1(r)=u(r)^*\mathcal D_4u(r)\), where \(\mathcal D_4\) is the
+algebra of diagonal \(4\times4\) matrices. Its four minimal projections,
+multiplied by \(2\), form an orthonormal basis for the normalized trace.
+The entries of the cross-Gram matrix are therefore
+\(\lvert(u(s)u(t)^*)_{ij}\rvert^2\).
+Multiplication of the matrices in \eqref{eq:family}, followed by a
+simultaneous reordering of the bases, gives
+\[
+ G=I_2\oplus
+ \begin{pmatrix}
+ (1+\cos\Delta)/2&(1-\cos\Delta)/2\\
+ (1-\cos\Delta)/2&(1+\cos\Delta)/2
+ \end{pmatrix}.
+\]
+The last block has eigenvalues \(1,\cos\Delta\). Lemma~\ref{lem:intersection}
+now gives the assertion.
+\end{proof}
+
+For \(\Delta=\pi/2\), the fourth eigenvalue is \(0\). Hence \(c_1=3<4\)
+and \(S_1=\varnothing\): this is already an example of a proper
+intersection with no interior eigenvalue.
+
+\subsection{Inclusion matrices and finite centers}
+The finite-dimensional algebras occurring here are direct sums of
+full matrix algebras. Write, with \(M_a(\C)\) denoting all \(a\times a\)
+complex matrices,
+\[
+ C_n\cong\bigoplus_{i=1}^{z_n}M_{a_i}(\C),\qquad
+ D_n\cong\bigoplus_{j=1}^{h_n}M_{d_j}(\C).
+\]
+Then \(c_n=\sum_i a_i^2\) and \(z_n=\dim_{\C}Z(C_n)\).
+The \emph{inclusion matrix} \(\Lambda_n\) records how these blocks embed.
+Inside the \(j\)-th block of \(D_n\), a suitable basis makes
+the action of \(C_n\) block diagonal, with \((\Lambda_n)_{ij}\)
+copies of its \(i\)-th matrix block. In particular
+\(d_j=\sum_i(\Lambda_n)_{ij}a_i\).
+The reported number is
+\begin{equation}\label{eq:ell}
+ \ell_n=\|\Lambda_n\|^2
+       =\text{largest eigenvalue of }\Lambda_n\Lambda_n^{\mathsf T}.
+\end{equation}
+The norm here is the Euclidean operator norm of a finite matrix.
+We compare \(\ell_n\) with \(I(s,t)\), but they are distinct quantities.
+For example, below the pair with \(I(s,t)=12\) has \(\ell_1=6\).
+No equality at a prescribed finite level is assumed.
+
+Similarly, a finite algebra \(C_n\) may have several central summands
+even when its strong limit is a factor. An element central in \(C_n\)
+need not commute with elements introduced at later levels.
+Center and trace-transition data are recorded in
+Appendix~\ref{sec:centers}; they are not used as a proof of factoriality.
+
+\section{The results being illustrated}\label{sec:theorems}
+The relevant source is Section~7 of Bakshi--Guin~\cite{BG}.
+Their circle parameters are \(a=e^{is}\) and \(b=e^{it}\).
+We state the consequences needed here using \(q\) from
+\eqref{eq:phase}; equality is separated from the proper-intersection case.
+The adjoint convention for the connection conjugates the relative phase,
+which does not change \(q\) or the squared cosines.
+Let \(e_s,e_t\) be the orthogonal projections onto
+\(L^2(N_s),L^2(N_t)\) in \(L^2(M)\). The limiting operator is
+\(T=(e_se_te_s)|_{L^2(N_s)}\); its interior spectrum means
+\(\spec(T)\cap(0,1)\), with both endpoints excluded.
+
+\Needspace{19\baselineskip}
+\begin{theorem}[Bakshi--Guin, in relative-phase notation]\label{thm:bg}
+For the above family:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item If \(q=1\), then \(N_s=N_t\) and \(I(s,t)=4\).
+\item If \(2\leq q<\infty\), then \(P_{s,t}\subset M\) is an
+irreducible subfactor and \(I(s,t)=4q\).
+\item If \(q=\infty\), then \(I(s,t)=\infty\).
+\item For a proper pair, the conditional expectations commute
+exactly when \(q=2\).
+\item If \(2\leq q<\infty\), the interior spectrum of the limiting
+projection product is
+\[
+ S(q)=\left\{\cos^2\frac{k\pi}{q}:
+                   1\leq k\leq\left\lfloor\frac{q-1}{2}\right\rfloor\right\}.
+\]
+\end{enumerate}
+\end{theorem}
+The index assertions use \cite[Theorems 7.30, 7.32, 7.36--7.37]{BG};
+the commuting and spectral assertions use
+\cite[Theorems 7.46--7.47]{BG}. Part (iii) makes no assertion here
+about factoriality. \emph{Irreducible} in (ii) means
+\(P_{s,t}'\cap M=\C1\): only scalars in \(M\) commute with all of
+\(P_{s,t}\). This implies \(Z(P_{s,t})=\C1\).
+
+\paragraph{Why the squared phase appears.}
+Adding \(\pi\) to \(t\) swaps rows \(2\) and \(4\) of \(H(t)\).
+In this realization this is a relabeling and leaves \(N_t\) unchanged.
+Thus \(\theta\) and \(-\theta\) describe the same pair of subfactors.
+If \(\Delta/\pi=p/q\) is reduced, the least positive \emph{even}
+integer \(m\) with \(\theta^m=1\) is \(2q\). The expression \(2m\)
+for the index is therefore \(4q\).
+For instance, \(\theta=e^{2\pi i/3}\) has order \(3\), but its
+least even exponent giving \(1\) is \(6\); the index is \(12\),
+not \(6\). When \(q=1\), repeated row swaps give the equality in (i).
+
+\paragraph{Reading the spectral formula.}
+For \(q=2,3,4,5\), respectively, Theorem~\ref{thm:bg} gives
+\begin{equation}\label{eq:smallsets}
+ \varnothing,\qquad
+ \{1/4\},\qquad
+ \{1/2\},\qquad
+ \left\{\frac{3+\sqrt5}{8},\frac{3-\sqrt5}{8}\right\}.
+\end{equation}
+For \(q=2\), the empty set is consistent with the presence of a right
+angle: its squared cosine \(0\) was excluded from our definition.
+The formula gives a \emph{set} and does not give the multiplicity of
+each value at a finite level.
+
+The finite subspaces and their orthogonal complements are invariant
+under the two projections (they \emph{reduce} them), so
+\(S_n\subseteq S_{n+1}\). In the rational cases each \(S_n\) is
+contained in \(S(q)\); a value in \(S(q)\) need not appear at the
+first level. These observations explain the separate columns
+\(k_n\) and \(\lambda_n\).
+
+\begin{remark}
+The Fourier-conjugate intersections in Bakshi--Guin--Guruprasad~\cite{BGG}
+form a different problem. Their first-level index formula cannot be
+substituted for Theorem~\ref{thm:bg}. Proposition~\ref{prop:first}
+shows that \(c_1=3\) for every proper pair here, although the indices
+of these pairs need not be equal.
+\end{remark}
+
+\section{Computations for the Hadamard family}\label{sec:results}
+Table~\ref{tab:parameters} lists every tested pair. The labels H01--H14
+serve only to locate the same pair in the saved output.
+Equality cases were computed through \(n=4\), and all proper pairs
+through \(n=5\). Every subsequent table uses the definitions
+\[
+ c_n=\dim_{\C}C_n,\quad k_n=|S_n|,\quad
+ \lambda_n=\max S_n,\quad \ell_n=\|\Lambda_n\|^2.
+\]
+Recall that \(b_n=4^n\) for this entire section.
+Decimal entries are rounded numerical values. A table shared by several
+pairs means that all of its displayed entries agree for those pairs.
+It does not identify the intersections as embedded algebras.
+
+@@PARAMETERS@@
+
+\subsection[Equality]{Equality: \(t-s\in\pi\Z\)}
+We used \((0,0)\), \((\pi/7,\pi/7)\), and
+\((\pi/7,8\pi/7)\). The first two compare a matrix with itself,
+once at the Fourier member and once elsewhere in the family.
+The third compares distinct matrices related by the row swap described
+above. In all three cases \(C_n=B_n(s)\), and the computed data are:
+
+@@EQUAL@@
+
+Thus \(c_n=4^n\), every eigenvalue of \(T_n\) is \(1\),
+and \(\ell_n=4\). The dash in the \(\lambda_n\) column means that
+there is no angle strictly between \(0\) and \(\pi/2\), not that
+the calculation is missing.
+
+\subsection[A proper commuting pair]{A proper commuting pair: \(t-s=\pi/2\)}
+The pairs \((0,\pi/2)\) and \((\pi/7,9\pi/14)\) have the same
+difference and \(q=2\). Theorem~\ref{thm:bg} gives \(I(s,t)=8\)
+and commuting conditional expectations.
+
+@@COMMUTING@@
+
+Already \(c_1=3<4=b_1\), so the intersection is proper.
+Nevertheless \(S_n=\varnothing\) at every computed level.
+This distinguishes the present case from equality without relying
+on the interior spectral count alone. The inclusion norm first
+equals \(8\) at \(n=2\); its initial value is \(6\).
+
+\subsection[The first noncommuting rational case]{The first noncommuting rational case: \(q=3\)}
+We used
+\[
+ (0,\pi/3),\qquad (0,2\pi/3),\qquad(\pi/7,10\pi/21).
+\]
+The first and third pairs have difference \(\pi/3\); the second
+has difference \(2\pi/3\). Their relative phases have different orders,
+but their \emph{squared} phases all have order \(3\).
+The predicted index is \(12\), with \(S(3)=\{1/4\}\).
+
+@@ORDER3@@
+
+The value \(1/4\) is present from the first level onward. It corresponds
+to the angle \(\arccos(1/2)=\pi/3\), so the conditional expectations
+do not commute. The computed \(\ell_n\) first equals \(12\) at
+\(n=4\), and has the same value at \(n=5\).
+This is agreement with a known index, rather than a deduction of
+that index from two equal numerical entries.
+
+\subsection[Larger denominators]{Larger denominators: \(q=4\) and \(q=5\)}
+For \((s,t)=(0,\pi/4)\), the predicted index is \(16\)
+and \(S(4)=\{1/2\}\).
+
+@@ORDER4@@
+
+The full interior spectral set has appeared, but \(\ell_5=14<16\).
+Thus the appearance of all limiting spectral values does not mean
+that the inclusion norm has reached the index.
+
+For \((s,t)=(0,\pi/5)\), the predicted index is \(20\).
+Its two interior values are approximately \(0.654508\) and
+\(0.095492\), as in \eqref{eq:smallsets}.
+
+@@ORDER5@@
+
+The smaller value first appears at \(n=3\). Consequently \(k_n\)
+increases from \(1\) to \(2\) while \(\lambda_n\) stays unchanged.
+The inclusion norms \(6,8,10,12,14\) are identical to those for \(q=4\);
+neither pair has reached its index within the calculated range.
+
+\subsection{Irrational differences}
+First consider \((0,1)\) and \((\pi/7,\pi/7+1)\).
+Since \(1/\pi\) is irrational, Theorem~\ref{thm:bg} gives infinite
+Pimsner--Popa index for both pairs.
+
+@@IRR1@@
+
+The sets through level \(5\), rounded to six decimal places, are
+\[
+ \begin{aligned}
+ S_1=S_2&=\{0.291927\},\\
+ S_3=S_4&=\{0.291927,0.173178\},\\
+ S_5&=\{0.980085,0.291927,0.173178\}.
+ \end{aligned}
+\]
+The new value at level \(3\) is below the previous maximum, and
+the new value at level \(5\) is above it. Looking only at
+\(\lambda_1,\ldots,\lambda_4\) would conceal this development.
+
+For the pair \((0,\sqrt2)\), the ratio \(\sqrt2/\pi\) is also
+irrational: a nonzero rational value for this ratio would imply
+that \(\pi\) is algebraic. The index is again infinite.
+
+@@IRR2@@
+
+Here \(S_5\), rounded, is
+\(\{0.905092,0.204903,0.024318\}\).
+The dimension and inclusion-norm sequences match the previous
+irrational pair, but the spectral locations differ. The first
+increase in the largest interior eigenvalue occurs at level \(3\)
+rather than at level \(5\).
+
+\subsection{A small perturbation of a rational difference}
+Finally, take
+\[
+ (s,t)=(0,\pi/3+1/100).
+\]
+This changes the index-\(12\) example by \(0.01\) radians.
+Its ratio \(\Delta/\pi=1/3+1/(100\pi)\) is irrational, since
+rationality would force \(\pi\) to be rational. Its theoretical
+index is therefore infinite.
+
+@@PERTURB@@
+
+At level \(5\), this pair has \(c_5=462\), whereas the unperturbed
+pair has \(c_5=463\). The perturbed pair also has an interior
+eigenvalue approximately \(0.999100\). It must not be counted as \(1\).
+An eigenvector belonging to such an eigenvalue is orthogonal to the
+eigenvalue-\(1\) space \(C_5\); it describes nearly parallel
+directions outside the intersection, as in Example~\ref{ex:lines}.
+Thus closeness of the eigenvalue to \(1\) does not mean closeness
+of its eigenvector to the intersection.
+
+\subsection{What these comparisons establish}
+The three pairs of common shifts
+\[
+ \begin{gathered}
+ (0,\pi/2),\ (\pi/7,9\pi/14);\\
+ (0,\pi/3),\ (\pi/7,10\pi/21);\\
+ (0,1),\ (\pi/7,\pi/7+1)
+ \end{gathered}
+\]
+agree in the calculated dimensions, simple block sizes, center
+dimensions, inclusion norms, and interior spectra with multiplicities.
+The same comparisons agree for \((0,\pi/3)\) and \((0,2\pi/3)\).
+These are numerical comparisons over the stated levels.
+
+The \(q=4\), \(q=5\), and all irrational examples share
+\[
+ (c_1,\ldots,c_5)=(3,10,35,126,462),\qquad
+ (\ell_1,\ldots,\ell_5)=(6,8,10,12,14).
+\]
+Nevertheless their theoretical indices are \(16\), \(20\), and
+\(\infty\), respectively. This is the principal limitation of
+reading off a limiting index from a short sequence.
+Likewise, finite-level centers do not determine whether the limit
+is a factor. The rational/irrational classification comes from
+Theorem~\ref{thm:bg}, not from extrapolating these lists.
+
+\appendix
+\section[The separate S(1,1,2,2) family]{The separate \(S(1,1,2,2)\) family}\label{sec:ah}
+The demo also retains a connection family associated with the four-arm
+graph \(S(1,1,2,2)\), whose arm lengths are \(1,1,2,2\); see
+Bisch--C\'aceres~\cite{BC} for the construction.
+Denote its subfactors by \(\widetilde N_r\subset\widetilde M\)
+to distinguish them from the Hadamard family. Their individual index is
+\[
+ [\widetilde M:\widetilde N_r]=\frac{5+\sqrt{17}}2
+ \simeq4.561553.
+\]
+We use the definitions \(b_n,c_n,k_n,\lambda_n,\ell_n\) from the
+main text for this separate tower. The Hadamard theorem does not
+give the index of \(\widetilde N_s\cap\widetilde N_t\).
+Throughout this appendix \(s=\pi/3\).
+
+For \(t=s\), the intersection equals \(\widetilde N_s\).
+The computation gives:
+
+@@AH_EQUAL@@
+
+For all seven unequal parameters listed in Table~\ref{tab:ahmax},
+the following displayed data agree.
+
+@@AH_PROPER@@
+
+@@AH_MAXIMA@@
+
+Every pair in the latter table has a specific interpretation.
+The pair with \(t=\pi/3\) is equality. For \(t=\pi/2\) and \(t=7/5\),
+the largest interior eigenvalue remains constant through all four
+levels, even though the number of distinct interior eigenvalues grows.
+The value \(t=2\pi/3=\pi-s\) also gives a constant maximum, but does
+not give the same embedded subfactor as \(s\).
+For \(t=\pi\) and \(t=4\pi/3\), the maximum increases at level \(3\).
+In particular, \(t-s=\pi\) in the latter example does not imply
+equality in this family. For \(t=5\pi/3=2\pi-s\) the maximum
+increases at each displayed step. For \(t=1/10\) it increases
+slightly at level \(3\).
+
+The computed inclusions of the intersection algebras have two connected
+components through these four levels. A connected component groups simple
+summands linked by nonzero inclusion multiplicities. Its sum of central
+projections has trace approximately \(0.179806\) for one component and
+\(0.820194\) for the other. The initial vertex labels in the program
+are \(d2\) and \(\{A,a2\}\), respectively; the labels have no further
+role in interpreting these trace values.
+If these compatible projections remained central at every subsequent
+level, they would establish that the limiting intersection is not a
+factor. Four levels alone do not prove that persistence. Nor does the
+observed growth of \(k_n\) or \(\ell_n\) prove infinite index.
+
+\section{Center and trace-transition data}\label{sec:centers}
+For completeness, we record the remaining columns of the computation
+and define the transition statistic explicitly. Let \(L^{(n)}\) be
+the inclusion matrix for \(C_n\subset C_{n+1}\); it is a different
+matrix from \(\Lambda_n\), which describes \(C_n\subset D_n\).
+Let \(w_i^{(n)}\) be the trace of a minimal projection in the
+\(i\)-th matrix summand of \(C_n\). Define
+\[
+ K^{(n)}_{ij}
+ =\frac{L^{(n)}_{ij}w_j^{(n+1)}}{w_i^{(n)}},
+ \qquad K_{1,n}=K^{(1)}K^{(2)}\cdots K^{(n-1)}.
+\]
+Each row of \(K^{(n)}\) sums to \(1\), by compatibility of the
+trace with the inclusion. Thus its rows can be viewed as probability
+distributions on the next level's summands. The recorded coefficient is
+\[
+ d_{1,n}=\frac12\max_{i,i'}
+              \sum_j |(K_{1,n})_{ij}-(K_{1,n})_{i'j}|,
+ \qquad n\geq2.
+\]
+It lies in \([0,1]\). A value \(0\) means all these distributions
+agree; a value \(1\) means that two have disjoint supports.
+There is no transition at \(n=1\), so the output puts a dash there.
+
+@@CENTERS@@
+
+For the equal Hadamard pairs, \(z_n\) alternates between \(4\) and
+\(1\), although the limit is the known factor \(N_s\).
+For the unequal \(S(1,1,2,2)\) pairs, \(z_4=7\), although the
+four-level diagram has two connected components: one component
+can contain several simple summands.
+
+The coefficient \(d_{1,n}\) compares only distributions starting at
+the first level. It does not, by itself, control information introduced
+at later levels. Its vanishing, or its decrease over a finite range,
+is therefore not used here as a factoriality criterion.
+
+\section{Numerical procedure and reproducibility}\label{sec:numerics}
+The calculations use double-precision complex arithmetic and
+orthonormal bases for the trace inner product. Lemma~\ref{lem:intersection}
+reduces the spectral calculation to the squared singular values
+of a cross-Gram matrix. The implementation uses tolerance
+\(\varepsilon=10^{-9}\): an eigenvalue at least
+\((1-\varepsilon)^2\) is assigned to the intersection.
+Interior eigenvalues are grouped with tolerance \(10^{-8}\);
+the comparisons use \(5\cdot10^{-7}\).
+These procedures do not constitute rigorous error bounds.
+For the perturbed example, the observed gap \(1-0.999100\)
+is much larger than the intersection cutoff.
+
+The saved run contains \(22\) pairs and @@ROWS@@ finite-level records.
+All @@CHECKS@@ per-pair checks and four cross-pair comparisons passed.
+The checks include Proposition~\ref{prop:first}, the equality cases,
+containment in the rational spectral sets, nesting of the interior
+spectra, and \(c_n=\sum_i a_i^2\).
+For rational phases, the computed inclusion norms were also checked
+not to exceed the known index. The three existing tests for equality,
+the Fourier-conjugate example, and nested spectra passed.
+The tables in this note are generated from that saved run; no new
+numerical run was needed for this exposition.
+
+The parameters are specified exactly before evaluating matrices
+numerically. In particular, the distinction between a rational
+and an irrational multiple of \(\pi\) is not inferred by rounding
+a decimal approximation.
+
+The source files are \path{Code/intersection_demo.py},
+\path{Code/intersection_demo_results.json}, and
+\path{Code/intersection_demo_output.txt}.
+The prose is in \path{Code/intersection_report_template.tex};
+\path{Code/write_intersection_report.py} inserts the recorded tables
+and emits a standalone \LaTeX{} source. From the project root:
+\begin{quote}\small\ttfamily
+.\textbackslash.venv\textbackslash Scripts\textbackslash python.exe Code/intersection\_demo.py\\
+.\textbackslash.venv\textbackslash Scripts\textbackslash python.exe Code/write\_intersection\_report.py\\
+pdflatex -output-directory=output/pdf\\
+\hspace*{1em}output/pdf/intersection\_results\_explained.tex
+\end{quote}
+The last two printed lines form one command. Run that command twice
+to resolve references. The generator expects the complete default
+calculation. The standalone generated source includes every table
+and does not need the data file when compiled.
+
+\begin{thebibliography}{9}
+\bibitem{BG}
+K.~C. Bakshi and S. Guin,
+\emph{Relative position between a pair of spin model subfactors},
+\href{https://arxiv.org/html/2212.07197v3}{arXiv:2212.07197v3},
+Section~7. We specify this version for its theorem numbering;
+the second part was published separately as
+\emph{A family of subfactors arising from a pair of complex Hadamard matrices}.
+\bibitem{BGG}
+K.~C. Bakshi, S. Guin and Guruprasad,
+\emph{Intersection of conjugate Hadamard subfactors arising from Fourier matrices},
+\href{https://arxiv.org/abs/2510.14499}{arXiv:2510.14499}.
+\bibitem{BC}
+D. Bisch and J. C\'aceres,
+\emph{New hyperfinite subfactors with infinite depth},
+\href{https://arxiv.org/abs/2509.00227}{arXiv:2509.00227}.
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,142 @@
+============================================================================
+A. Hadamard validation, F_4: Theorem B of arXiv:2510.14499
+============================================================================
+  Expected: ||L||^2 = N^2 / |H| at every level, |H| = dim C_1; a finite
+  spectrum (the angle count does not grow); a factor (dobrushin -> 0).
+
+  V = D U with D = diag(1, 1, 1, -1)
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1         4        1       0          -    16.0000       1          -
+     2        16        4       0          -    16.0000       4     0.0000
+     3        64       16       0          -    16.0000       1     0.0000
+     4       256       64       0          -    16.0000       4     0.0000
+    (0.6s)
+    |H| = 1,  N^2 / |H| = 16
+
+  V = D U with D = diag(1, 1, -1, -1)
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1         4        2       0          -     8.0000       2          -
+     2        16        8       0          -     8.0000       2     0.0000
+     3        64       32       0          -     8.0000       2     0.0000
+     4       256      128       0          -     8.0000       2     0.0000
+    (0.6s)
+    |H| = 2,  N^2 / |H| = 8
+
+  V = D U with D = diag(1, 1, i, i)
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1         4        1       1   0.250000    16.0000       1          -
+     2        16        4       1   0.250000    16.0000       4     0.0000
+     3        64       16       1   0.250000    16.0000       1     0.0000
+     4       256       64       1   0.250000    16.0000       4     0.0000
+    (0.6s)
+    |H| = 1,  N^2 / |H| = 16
+
+  V = D U with D = diag(1, e^i, e^2i, e^3i)
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1         4        1       2   0.379884    16.0000       1          -
+     2        16        4       2   0.379884    16.0000       4     0.0000
+     3        64       16       2   0.379884    16.0000       1     0.0000
+     4       256       64       2   0.379884    16.0000       4     0.0000
+    (0.4s)
+    |H| = 1,  N^2 / |H| = 16
+
+  V = D U with D = diag(1, i, -1, -i)  (a row shift)
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1         4        4       0          -     4.0000       4          -
+     2        16       16       0          -     4.0000       1     0.0000
+     3        64       64       0          -     4.0000       4     0.0000
+     4       256      256       0          -     4.0000       1     0.0000
+    (1.2s)
+    |H| = 4,  N^2 / |H| = 4
+
+============================================================================
+B. S(1,1,2,2): s = pi/3 against a range of s'
+============================================================================
+  delta^2 = [M : N_s] = 4.561553
+
+  s' = pi/3
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1        10       10       0          -     4.5616       4          -
+     2        44       44       0          -     4.5616       3     0.2192
+     3       200      200       0          -     4.5616       4     0.2192
+     4       912      912       0          -     4.5616       3     0.0481
+    (23.2s)
+
+  s' = pi/2
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1        10        6       3   0.981714    12.5962       3          -
+     2        44       16       6   0.981714    29.3850       5     1.0000
+     3       200       47      13   0.981714    65.2645       5     1.0000
+     4       912      146      30   0.981714   142.2530       7     1.0000
+    the Bratteli diagram splits into 2 components at every level: central projections of every C_n
+      tau = 0.179806  = the projection onto paths starting at d2
+      tau = 0.820194  = the projection onto paths starting at A, a2
+    (5.5s)
+
+  s' = 7/5
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1        10        6       3   0.991517    12.5962       3          -
+     2        44       16       6   0.991517    29.3850       5     1.0000
+     3       200       47      13   0.991517    65.2645       5     1.0000
+     4       912      146      30   0.991517   142.2530       7     1.0000
+    the Bratteli diagram splits into 2 components at every level: central projections of every C_n
+      tau = 0.179806  = the projection onto paths starting at d2
+      tau = 0.820194  = the projection onto paths starting at A, a2
+    (7.7s)
+
+  s' = 2*pi/3
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1        10        6       3   0.929114    12.5962       3          -
+     2        44       16       6   0.929114    29.3850       5     1.0000
+     3       200       47      13   0.929114    65.2645       5     1.0000
+     4       912      146      30   0.929114   142.2530       7     1.0000
+    the Bratteli diagram splits into 2 components at every level: central projections of every C_n
+      tau = 0.179806  = the projection onto paths starting at d2
+      tau = 0.820194  = the projection onto paths starting at A, a2
+    (5.3s)
+
+  s' = pi
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1        10        6       3   0.699090    12.5962       3          -
+     2        44       16       6   0.699090    29.3850       5     1.0000
+     3       200       47      13   0.746415    65.2645       5     1.0000
+     4       912      146      30   0.746415   142.2530       7     1.0000
+    the Bratteli diagram splits into 2 components at every level: central projections of every C_n
+      tau = 0.179806  = the projection onto paths starting at d2
+      tau = 0.820194  = the projection onto paths starting at A, a2
+    (5.7s)
+
+  s' = 4*pi/3
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1        10        6       3   0.453602    12.5962       3          -
+     2        44       16       6   0.453602    29.3850       5     1.0000
+     3       200       47      13   0.654014    65.2645       5     1.0000
+     4       912      146      30   0.654014   142.2530       7     1.0000
+    the Bratteli diagram splits into 2 components at every level: central projections of every C_n
+      tau = 0.179806  = the projection onto paths starting at d2
+      tau = 0.820194  = the projection onto paths starting at A, a2
+    (6.4s)
+
+  s' = 5*pi/3
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1        10        6       3   0.261366    12.5962       3          -
+     2        44       16       6   0.328800    29.3850       5     1.0000
+     3       200       47      13   0.670313    65.2645       5     1.0000
+     4       912      146      30   0.711199   142.2530       7     1.0000
+    the Bratteli diagram splits into 2 components at every level: central projections of every C_n
+      tau = 0.179806  = the projection onto paths starting at d2
+      tau = 0.820194  = the projection onto paths starting at A, a2
+    (5.3s)
+
+  s' = 1/10
+     n  dim A_n0  dim C_n  angles    top < 1    ||L||^2  centre  dobrushin
+     1        10        6       3   0.932784    12.5962       3          -
+     2        44       16       6   0.932784    29.3850       5     1.0000
+     3       200       47      13   0.934350    65.2645       5     1.0000
+     4       912      146      30   0.934350   142.2530       7     1.0000
+    the Bratteli diagram splits into 2 components at every level: central projections of every C_n
+      tau = 0.179806  = the projection onto paths starting at d2
+      tau = 0.820194  = the projection onto paths starting at A, a2
+    (5.8s)
+
+done.

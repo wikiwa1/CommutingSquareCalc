@@ -1,0 +1,5011 @@
+{
+  "schema_version": 1,
+  "backend": "numpy",
+  "versions": {
+    "python": "3.12.14",
+    "numpy": "2.5.4",
+    "sympy": "1.14.0"
+  },
+  "spectral_tolerance": 1e-09,
+  "cluster_tolerance": 1e-08,
+  "check_tolerance": 5e-07,
+  "pairs": [
+    {
+      "id": "H01",
+      "family": "hadamard",
+      "s": "0",
+      "t": "0",
+      "s_latex": "0",
+      "t_latex": "0",
+      "note": "identical Fourier inputs",
+      "max_n": 4,
+      "phase": {
+        "delta": "0",
+        "delta_latex": "0",
+        "ratio_pi": "0",
+        "phase_order": 1,
+        "squared_phase_order": 1,
+        "index_benchmark": 4,
+        "category": "equal",
+        "commuting_expected": true
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 4,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 3.999999999999999,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 16,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.0,
+          "center_dim": 1,
+          "block_sizes": [
+            4
+          ],
+          "mix_from_1": 3.3306690738754696e-16
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 64,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 3.999999999999999,
+          "center_dim": 4,
+          "block_sizes": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "mix_from_1": 3.191891195797325e-16
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 256,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.0,
+          "center_dim": 1,
+          "block_sizes": [
+            16
+          ],
+          "mix_from_1": 3.3306690738754696e-16
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.9999999999999999,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "commuting control has no interior spectrum",
+          "passed": true
+        },
+        {
+          "name": "equal pair has full dimension",
+          "passed": true
+        },
+        {
+          "name": "equal pair has no interior spectrum",
+          "passed": true
+        },
+        {
+          "name": "equal pair norms equal individual index",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 0.6596953868865967
+    },
+    {
+      "id": "H02",
+      "family": "hadamard",
+      "s": "pi/7",
+      "t": "pi/7",
+      "s_latex": "\\frac{\\pi}{7}",
+      "t_latex": "\\frac{\\pi}{7}",
+      "note": "identical non-Fourier inputs",
+      "max_n": 4,
+      "phase": {
+        "delta": "0",
+        "delta_latex": "0",
+        "ratio_pi": "0",
+        "phase_order": 1,
+        "squared_phase_order": 1,
+        "index_benchmark": 4,
+        "category": "equal",
+        "commuting_expected": true
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 4,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 3.999999999999999,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 16,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.0,
+          "center_dim": 1,
+          "block_sizes": [
+            4
+          ],
+          "mix_from_1": 2.220446049250313e-16
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 64,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 3.999999999999999,
+          "center_dim": 4,
+          "block_sizes": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "mix_from_1": 2.220446049250313e-16
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 256,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.0,
+          "center_dim": 1,
+          "block_sizes": [
+            16
+          ],
+          "mix_from_1": 2.220446049250313e-16
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.9999999999999998,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "commuting control has no interior spectrum",
+          "passed": true
+        },
+        {
+          "name": "equal pair has full dimension",
+          "passed": true
+        },
+        {
+          "name": "equal pair has no interior spectrum",
+          "passed": true
+        },
+        {
+          "name": "equal pair norms equal individual index",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 0.7058196067810059
+    },
+    {
+      "id": "H03",
+      "family": "hadamard",
+      "s": "pi/7",
+      "t": "8*pi/7",
+      "s_latex": "\\frac{\\pi}{7}",
+      "t_latex": "\\frac{8 \\pi}{7}",
+      "note": "pi shift: different matrices, same algebra",
+      "max_n": 4,
+      "phase": {
+        "delta": "pi",
+        "delta_latex": "\\pi",
+        "ratio_pi": "1",
+        "phase_order": 2,
+        "squared_phase_order": 1,
+        "index_benchmark": 4,
+        "category": "equal",
+        "commuting_expected": true
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 4,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 3.999999999999999,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 16,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.0,
+          "center_dim": 1,
+          "block_sizes": [
+            4
+          ],
+          "mix_from_1": 2.220446049250313e-16
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 64,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 3.999999999999999,
+          "center_dim": 4,
+          "block_sizes": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "mix_from_1": 2.220446049250313e-16
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 256,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.0,
+          "center_dim": 1,
+          "block_sizes": [
+            16
+          ],
+          "mix_from_1": 2.220446049250313e-16
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 1.0000000000000002,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "commuting control has no interior spectrum",
+          "passed": true
+        },
+        {
+          "name": "equal pair has full dimension",
+          "passed": true
+        },
+        {
+          "name": "equal pair has no interior spectrum",
+          "passed": true
+        },
+        {
+          "name": "equal pair norms equal individual index",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 0.703890323638916
+    },
+    {
+      "id": "H04",
+      "family": "hadamard",
+      "s": "0",
+      "t": "pi/2",
+      "s_latex": "0",
+      "t_latex": "\\frac{\\pi}{2}",
+      "note": "order 4 phase: commuting pair, index 8",
+      "max_n": 5,
+      "phase": {
+        "delta": "pi/2",
+        "delta_latex": "\\frac{\\pi}{2}",
+        "ratio_pi": "1/2",
+        "phase_order": 4,
+        "squared_phase_order": 2,
+        "index_benchmark": 8,
+        "category": "finite",
+        "commuting_expected": true
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 6.0,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5000000000000001
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 36,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 8.0,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.25000000000000017
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 136,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            6,
+            10
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 528,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 8.0,
+          "center_dim": 5,
+          "block_sizes": [
+            6,
+            6,
+            10,
+            10,
+            16
+          ],
+          "mix_from_1": 0.1250000000000001
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 0.9999999999999999,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        },
+        {
+          "name": "spectrum lies in rational-phase spectral set",
+          "passed": true
+        },
+        {
+          "name": "inclusion norms do not exceed index benchmark",
+          "passed": true
+        },
+        {
+          "name": "commuting control has no interior spectrum",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 9.060264348983765
+    },
+    {
+      "id": "H05",
+      "family": "hadamard",
+      "s": "pi/7",
+      "t": "9*pi/14",
+      "s_latex": "\\frac{\\pi}{7}",
+      "t_latex": "\\frac{9 \\pi}{14}",
+      "note": "shifted order 4 pair",
+      "max_n": 5,
+      "phase": {
+        "delta": "pi/2",
+        "delta_latex": "\\frac{\\pi}{2}",
+        "ratio_pi": "1/2",
+        "phase_order": 4,
+        "squared_phase_order": 2,
+        "index_benchmark": 8,
+        "category": "finite",
+        "commuting_expected": true
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 6.0,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5000000000000001
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 36,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 8.0,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 136,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            6,
+            10
+          ],
+          "mix_from_1": 0.25000000000000006
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 528,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 8.0,
+          "center_dim": 5,
+          "block_sizes": [
+            6,
+            6,
+            10,
+            10,
+            16
+          ],
+          "mix_from_1": 0.1250000000000001
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        },
+        {
+          "name": "spectrum lies in rational-phase spectral set",
+          "passed": true
+        },
+        {
+          "name": "inclusion norms do not exceed index benchmark",
+          "passed": true
+        },
+        {
+          "name": "commuting control has no interior spectrum",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 8.405385494232178
+    },
+    {
+      "id": "H06",
+      "family": "hadamard",
+      "s": "0",
+      "t": "pi/3",
+      "s_latex": "0",
+      "t_latex": "\\frac{\\pi}{3}",
+      "note": "order 6 phase: noncommuting, index 12",
+      "max_n": 5,
+      "phase": {
+        "delta": "pi/3",
+        "delta_latex": "\\frac{\\pi}{3}",
+        "ratio_pi": "1/3",
+        "phase_order": 6,
+        "squared_phase_order": 3,
+        "index_benchmark": 12,
+        "category": "finite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2500000000000001,
+              1
+            ]
+          ],
+          "top_cos2": 0.2500000000000001,
+          "inclusion_norm2": 6.0,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2500000000000002,
+              6
+            ]
+          ],
+          "top_cos2": 0.2500000000000002,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.25000000000000033,
+              29
+            ]
+          ],
+          "top_cos2": 0.25000000000000033,
+          "inclusion_norm2": 10.0,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2500000000000011,
+              130
+            ]
+          ],
+          "top_cos2": 0.2500000000000011,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 463,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.25000000000000155,
+              561
+            ]
+          ],
+          "top_cos2": 0.25000000000000155,
+          "inclusion_norm2": 12.0,
+          "center_dim": 6,
+          "block_sizes": [
+            1,
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.18750000000000003
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        },
+        {
+          "name": "spectrum lies in rational-phase spectral set",
+          "passed": true
+        },
+        {
+          "name": "inclusion norms do not exceed index benchmark",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 7.993619441986084
+    },
+    {
+      "id": "H07",
+      "family": "hadamard",
+      "s": "0",
+      "t": "2*pi/3",
+      "s_latex": "0",
+      "t_latex": "\\frac{2 \\pi}{3}",
+      "note": "order 3 phase: squared-phase order 3, index 12",
+      "max_n": 5,
+      "phase": {
+        "delta": "2*pi/3",
+        "delta_latex": "\\frac{2 \\pi}{3}",
+        "ratio_pi": "2/3",
+        "phase_order": 3,
+        "squared_phase_order": 3,
+        "index_benchmark": 12,
+        "category": "finite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2500000000000002,
+              1
+            ]
+          ],
+          "top_cos2": 0.2500000000000002,
+          "inclusion_norm2": 6.0,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2500000000000002,
+              6
+            ]
+          ],
+          "top_cos2": 0.2500000000000002,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5000000000000001
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.25000000000000044,
+              29
+            ]
+          ],
+          "top_cos2": 0.25000000000000044,
+          "inclusion_norm2": 10.0,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.250000000000001,
+              130
+            ]
+          ],
+          "top_cos2": 0.250000000000001,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.25000000000000006
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 463,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.25000000000000155,
+              561
+            ]
+          ],
+          "top_cos2": 0.25000000000000155,
+          "inclusion_norm2": 12.0,
+          "center_dim": 6,
+          "block_sizes": [
+            1,
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.1875000000000001
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        },
+        {
+          "name": "spectrum lies in rational-phase spectral set",
+          "passed": true
+        },
+        {
+          "name": "inclusion norms do not exceed index benchmark",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 8.270774126052856
+    },
+    {
+      "id": "H08",
+      "family": "hadamard",
+      "s": "pi/7",
+      "t": "10*pi/21",
+      "s_latex": "\\frac{\\pi}{7}",
+      "t_latex": "\\frac{10 \\pi}{21}",
+      "note": "shifted order 6 pair",
+      "max_n": 5,
+      "phase": {
+        "delta": "pi/3",
+        "delta_latex": "\\frac{\\pi}{3}",
+        "ratio_pi": "1/3",
+        "phase_order": 6,
+        "squared_phase_order": 3,
+        "index_benchmark": 12,
+        "category": "finite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.25000000000000033,
+              1
+            ]
+          ],
+          "top_cos2": 0.25000000000000033,
+          "inclusion_norm2": 6.0,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2500000000000001,
+              6
+            ]
+          ],
+          "top_cos2": 0.2500000000000001,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.4999999999999999
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.25000000000000056,
+              29
+            ]
+          ],
+          "top_cos2": 0.25000000000000056,
+          "inclusion_norm2": 10.000000000000002,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.25
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.25000000000000133,
+              130
+            ]
+          ],
+          "top_cos2": 0.25000000000000133,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.24999999999999994
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 463,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2500000000000021,
+              561
+            ]
+          ],
+          "top_cos2": 0.2500000000000021,
+          "inclusion_norm2": 12.0,
+          "center_dim": 6,
+          "block_sizes": [
+            1,
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.1874999999999999
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        },
+        {
+          "name": "spectrum lies in rational-phase spectral set",
+          "passed": true
+        },
+        {
+          "name": "inclusion norms do not exceed index benchmark",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 8.063908815383911
+    },
+    {
+      "id": "H09",
+      "family": "hadamard",
+      "s": "0",
+      "t": "pi/4",
+      "s_latex": "0",
+      "t_latex": "\\frac{\\pi}{4}",
+      "note": "order 8 phase: index 16, delayed stabilization",
+      "max_n": 5,
+      "phase": {
+        "delta": "pi/4",
+        "delta_latex": "\\frac{\\pi}{4}",
+        "ratio_pi": "1/4",
+        "phase_order": 8,
+        "squared_phase_order": 4,
+        "index_benchmark": 16,
+        "category": "finite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.49999999999999895,
+              1
+            ]
+          ],
+          "top_cos2": 0.49999999999999895,
+          "inclusion_norm2": 5.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.49999999999999944,
+              6
+            ]
+          ],
+          "top_cos2": 0.49999999999999944,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.4999999999999999
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.4999999999999999,
+              28
+            ]
+          ],
+          "top_cos2": 0.4999999999999999,
+          "inclusion_norm2": 10.0,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.25
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.5000000000000009,
+              120
+            ]
+          ],
+          "top_cos2": 0.5000000000000009,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.25
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 462,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.5000000000000024,
+              496
+            ]
+          ],
+          "top_cos2": 0.5000000000000024,
+          "inclusion_norm2": 14.0,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.18749999999999997
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        },
+        {
+          "name": "spectrum lies in rational-phase spectral set",
+          "passed": true
+        },
+        {
+          "name": "inclusion norms do not exceed index benchmark",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 7.084001064300537
+    },
+    {
+      "id": "H10",
+      "family": "hadamard",
+      "s": "0",
+      "t": "pi/5",
+      "s_latex": "0",
+      "t_latex": "\\frac{\\pi}{5}",
+      "note": "order 10 phase: index 20, delayed stabilization",
+      "max_n": 5,
+      "phase": {
+        "delta": "pi/5",
+        "delta_latex": "\\frac{\\pi}{5}",
+        "ratio_pi": "1/5",
+        "phase_order": 10,
+        "squared_phase_order": 5,
+        "index_benchmark": 20,
+        "category": "finite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.6545084971874742,
+              1
+            ]
+          ],
+          "top_cos2": 0.6545084971874742,
+          "inclusion_norm2": 5.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.6545084971874748,
+              6
+            ]
+          ],
+          "top_cos2": 0.6545084971874748,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5000000000000002
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.6545084971874755,
+              28
+            ],
+            [
+              0.09549150281252637,
+              1
+            ]
+          ],
+          "top_cos2": 0.6545084971874755,
+          "inclusion_norm2": 10.0,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.25000000000000017
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.6545084971874761,
+              120
+            ],
+            [
+              0.09549150281252658,
+              10
+            ]
+          ],
+          "top_cos2": 0.6545084971874761,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 462,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.6545084971874789,
+              495
+            ],
+            [
+              0.09549150281252672,
+              67
+            ]
+          ],
+          "top_cos2": 0.6545084971874789,
+          "inclusion_norm2": 14.0,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.18750000000000006
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        },
+        {
+          "name": "spectrum lies in rational-phase spectral set",
+          "passed": true
+        },
+        {
+          "name": "inclusion norms do not exceed index benchmark",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 7.240590810775757
+    },
+    {
+      "id": "H11",
+      "family": "hadamard",
+      "s": "0",
+      "t": "1",
+      "s_latex": "0",
+      "t_latex": "1",
+      "note": "irrational relative phase",
+      "max_n": 5,
+      "phase": {
+        "delta": "1",
+        "delta_latex": "1",
+        "ratio_pi": "1/pi",
+        "phase_order": null,
+        "squared_phase_order": null,
+        "index_benchmark": null,
+        "category": "infinite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2919265817264285,
+              1
+            ]
+          ],
+          "top_cos2": 0.2919265817264285,
+          "inclusion_norm2": 6.0,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2919265817264286,
+              6
+            ]
+          ],
+          "top_cos2": 0.2919265817264286,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5000000000000001
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.291926581726429,
+              28
+            ],
+            [
+              0.17317818956819372,
+              1
+            ]
+          ],
+          "top_cos2": 0.291926581726429,
+          "inclusion_norm2": 10.0,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.2919265817264293,
+              120
+            ],
+            [
+              0.17317818956819378,
+              10
+            ]
+          ],
+          "top_cos2": 0.2919265817264293,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 462,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.9800851433251832,
+              1
+            ],
+            [
+              0.2919265817264321,
+              495
+            ],
+            [
+              0.17317818956819414,
+              66
+            ]
+          ],
+          "top_cos2": 0.9800851433251832,
+          "inclusion_norm2": 14.0,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.18750000000000003
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 0.9999999999999998,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 7.3239734172821045
+    },
+    {
+      "id": "H12",
+      "family": "hadamard",
+      "s": "pi/7",
+      "t": "pi/7 + 1",
+      "s_latex": "\\frac{\\pi}{7}",
+      "t_latex": "\\frac{\\pi}{7} + 1",
+      "note": "shifted irrational pair",
+      "max_n": 5,
+      "phase": {
+        "delta": "1",
+        "delta_latex": "1",
+        "ratio_pi": "1/pi",
+        "phase_order": null,
+        "squared_phase_order": null,
+        "index_benchmark": null,
+        "category": "infinite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.29192658172642816,
+              1
+            ]
+          ],
+          "top_cos2": 0.29192658172642816,
+          "inclusion_norm2": 5.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.2919265817264286,
+              6
+            ]
+          ],
+          "top_cos2": 0.2919265817264286,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.2919265817264287,
+              28
+            ],
+            [
+              0.17317818956819397,
+              1
+            ]
+          ],
+          "top_cos2": 0.2919265817264287,
+          "inclusion_norm2": 10.0,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.25000000000000006
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.29192658172642943,
+              120
+            ],
+            [
+              0.17317818956819406,
+              10
+            ]
+          ],
+          "top_cos2": 0.29192658172642943,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.25000000000000006
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 462,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.9800851433251825,
+              1
+            ],
+            [
+              0.29192658172643077,
+              495
+            ],
+            [
+              0.17317818956819456,
+              66
+            ]
+          ],
+          "top_cos2": 0.9800851433251825,
+          "inclusion_norm2": 14.0,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.18750000000000006
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 7.548647403717041
+    },
+    {
+      "id": "H13",
+      "family": "hadamard",
+      "s": "0",
+      "t": "sqrt(2)",
+      "s_latex": "0",
+      "t_latex": "\\sqrt{2}",
+      "note": "second irrational relative phase",
+      "max_n": 5,
+      "phase": {
+        "delta": "sqrt(2)",
+        "delta_latex": "\\sqrt{2}",
+        "ratio_pi": "sqrt(2)/pi",
+        "phase_order": null,
+        "squared_phase_order": null,
+        "index_benchmark": null,
+        "category": "infinite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.024318435937076173,
+              1
+            ]
+          ],
+          "top_cos2": 0.024318435937076173,
+          "inclusion_norm2": 5.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.024318435937076232,
+              6
+            ]
+          ],
+          "top_cos2": 0.024318435937076232,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5000000000000002
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.9050918015573963,
+              1
+            ],
+            [
+              0.02431843593707632,
+              28
+            ]
+          ],
+          "top_cos2": 0.9050918015573963,
+          "inclusion_norm2": 10.0,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.25000000000000033
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.9050918015573968,
+              10
+            ],
+            [
+              0.02431843593707644,
+              120
+            ]
+          ],
+          "top_cos2": 0.9050918015573968,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.2500000000000001
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 462,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.9050918015573989,
+              66
+            ],
+            [
+              0.20490275704736233,
+              1
+            ],
+            [
+              0.024318435937076752,
+              495
+            ]
+          ],
+          "top_cos2": 0.9050918015573989,
+          "inclusion_norm2": 14.0,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.1875000000000002
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 7.212039232254028
+    },
+    {
+      "id": "H14",
+      "family": "hadamard",
+      "s": "0",
+      "t": "1/100 + pi/3",
+      "s_latex": "0",
+      "t_latex": "\\frac{1}{100} + \\frac{\\pi}{3}",
+      "note": "irrational perturbation of order 6",
+      "max_n": 5,
+      "phase": {
+        "delta": "1/100 + pi/3",
+        "delta_latex": "\\frac{1}{100} + \\frac{\\pi}{3}",
+        "ratio_pi": "(3 + 100*pi)/(300*pi)",
+        "phase_order": null,
+        "squared_phase_order": null,
+        "index_benchmark": null,
+        "category": "infinite",
+        "commuting_expected": false
+      },
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 4,
+          "dim_intersection": 3,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.24139032163423324,
+              1
+            ]
+          ],
+          "top_cos2": 0.24139032163423324,
+          "inclusion_norm2": 5.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            1
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 16,
+          "dim_intersection": 10,
+          "interior_count": 1,
+          "interior_eigenvalues": [
+            [
+              0.24139032163423324,
+              6
+            ]
+          ],
+          "top_cos2": 0.24139032163423324,
+          "inclusion_norm2": 8.0,
+          "center_dim": 2,
+          "block_sizes": [
+            1,
+            3
+          ],
+          "mix_from_1": 0.5
+        },
+        {
+          "n": 3,
+          "dim_ambient": 64,
+          "dim_intersection": 35,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.26751586297778124,
+              1
+            ],
+            [
+              0.2413903216342336,
+              28
+            ]
+          ],
+          "top_cos2": 0.26751586297778124,
+          "inclusion_norm2": 10.0,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            3,
+            3,
+            4
+          ],
+          "mix_from_1": 0.25000000000000006
+        },
+        {
+          "n": 4,
+          "dim_ambient": 256,
+          "dim_intersection": 126,
+          "interior_count": 2,
+          "interior_eigenvalues": [
+            [
+              0.26751586297778107,
+              10
+            ],
+            [
+              0.24139032163423393,
+              120
+            ]
+          ],
+          "top_cos2": 0.26751586297778107,
+          "inclusion_norm2": 11.999999999999998,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            5,
+            10
+          ],
+          "mix_from_1": 0.25
+        },
+        {
+          "n": 5,
+          "dim_ambient": 1024,
+          "dim_intersection": 462,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.9991002699676024,
+              1
+            ],
+            [
+              0.2675158629777818,
+              66
+            ],
+            [
+              0.24139032163423535,
+              495
+            ]
+          ],
+          "top_cos2": 0.9991002699676024,
+          "inclusion_norm2": 14.0,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            6,
+            10,
+            10,
+            15
+          ],
+          "mix_from_1": 0.1874999999999999
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "trace": 1.0,
+          "starts": [
+            "*"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=4 persists at n=5",
+          "passed": true
+        },
+        {
+          "name": "level-1 intersection dimension is 3",
+          "passed": true
+        },
+        {
+          "name": "level-1 spectrum matches cos^2(t-s)",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 7.269558429718018
+    },
+    {
+      "id": "B01",
+      "family": "ah",
+      "s": "pi/3",
+      "t": "pi/3",
+      "s_latex": "\\frac{\\pi}{3}",
+      "t_latex": "\\frac{\\pi}{3}",
+      "note": "same-parameter control",
+      "max_n": 4,
+      "phase": null,
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 10,
+          "dim_intersection": 10,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.561552812808831,
+          "center_dim": 4,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            2
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 44,
+          "dim_intersection": 44,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.56155281280883,
+          "center_dim": 3,
+          "block_sizes": [
+            2,
+            2,
+            6
+          ],
+          "mix_from_1": 0.21922359359558513
+        },
+        {
+          "n": 3,
+          "dim_ambient": 200,
+          "dim_intersection": 200,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.561552812808829,
+          "center_dim": 4,
+          "block_sizes": [
+            6,
+            6,
+            8,
+            8
+          ],
+          "mix_from_1": 0.2192235935955849
+        },
+        {
+          "n": 4,
+          "dim_ambient": 912,
+          "dim_intersection": 912,
+          "interior_count": 0,
+          "interior_eigenvalues": [],
+          "top_cos2": null,
+          "inclusion_norm2": 4.56155281280883,
+          "center_dim": 3,
+          "block_sizes": [
+            8,
+            8,
+            28
+          ],
+          "mix_from_1": 0.0480589839889622
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 1.0,
+          "starts": [
+            "A",
+            "a2",
+            "d2"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        },
+        {
+          "name": "equal pair has full dimension",
+          "passed": true
+        },
+        {
+          "name": "equal pair has no interior spectrum",
+          "passed": true
+        },
+        {
+          "name": "equal pair norms equal individual index",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 7.2609312534332275
+    },
+    {
+      "id": "B02",
+      "family": "ah",
+      "s": "pi/3",
+      "t": "pi/2",
+      "s_latex": "\\frac{\\pi}{3}",
+      "t_latex": "\\frac{\\pi}{2}",
+      "note": "unequal AH parameters",
+      "max_n": 4,
+      "phase": null,
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 10,
+          "dim_intersection": 6,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.9817139010291749,
+              1
+            ],
+            [
+              0.9755086032696814,
+              2
+            ],
+            [
+              0.918978649030312,
+              1
+            ]
+          ],
+          "top_cos2": 0.9817139010291749,
+          "inclusion_norm2": 12.596209061489741,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            2
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 44,
+          "dim_intersection": 16,
+          "interior_count": 6,
+          "interior_eigenvalues": [
+            [
+              0.9817139010291753,
+              7
+            ],
+            [
+              0.9755086032696816,
+              10
+            ],
+            [
+              0.9619777440330594,
+              2
+            ],
+            [
+              0.949875413572037,
+              1
+            ],
+            [
+              0.9405216459911729,
+              1
+            ],
+            [
+              0.9189786490303122,
+              7
+            ]
+          ],
+          "top_cos2": 0.9817139010291753,
+          "inclusion_norm2": 29.385045719900305,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            2,
+            3
+          ],
+          "mix_from_1": 0.9999999999999999
+        },
+        {
+          "n": 3,
+          "dim_ambient": 200,
+          "dim_intersection": 47,
+          "interior_count": 13,
+          "interior_eigenvalues": [
+            [
+              0.9817139010291764,
+              36
+            ],
+            [
+              0.9814658106376324,
+              2
+            ],
+            [
+              0.9772769011925577,
+              1
+            ],
+            [
+              0.9755086032696831,
+              40
+            ],
+            [
+              0.9641409040779452,
+              1
+            ],
+            [
+              0.9619777440330596,
+              14
+            ],
+            [
+              0.9498754135720372,
+              9
+            ],
+            [
+              0.9405216459911739,
+              9
+            ],
+            [
+              0.9189786490303137,
+              36
+            ],
+            [
+              0.9169559181056298,
+              1
+            ],
+            [
+              0.9104009234512318,
+              1
+            ],
+            [
+              0.8644207351389994,
+              2
+            ],
+            [
+              0.8110137139246877,
+              1
+            ]
+          ],
+          "top_cos2": 0.9817139010291764,
+          "inclusion_norm2": 65.26453160980336,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            4,
+            5
+          ],
+          "mix_from_1": 1.0
+        },
+        {
+          "n": 4,
+          "dim_ambient": 912,
+          "dim_intersection": 146,
+          "interior_count": 30,
+          "interior_eigenvalues": [
+            [
+              0.9817139010291784,
+              161
+            ],
+            [
+              0.9814658106376333,
+              18
+            ],
+            [
+              0.9772769011925575,
+              11
+            ],
+            [
+              0.9755086032696851,
+              150
+            ],
+            [
+              0.9743664613670908,
+              2
+            ],
+            [
+              0.9641409040779456,
+              11
+            ],
+            [
+              0.9636995615956572,
+              1
+            ],
+            [
+              0.9619777440330615,
+              70
+            ],
+            [
+              0.9597215671917645,
+              1
+            ],
+            [
+              0.956199477141709,
+              1
+            ],
+            [
+              0.9498754135720389,
+              55
+            ],
+            [
+              0.9453206382640632,
+              2
+            ],
+            [
+              0.9414513650287012,
+              1
+            ],
+            [
+              0.9405216459911748,
+              55
+            ],
+            [
+              0.9292277903730353,
+              2
+            ],
+            [
+              0.9189786490303165,
+              161
+            ],
+            [
+              0.9169559181056294,
+              11
+            ],
+            [
+              0.9134754465063958,
+              2
+            ],
+            [
+              0.9104009234512322,
+              11
+            ],
+            [
+              0.9100457082760879,
+              1
+            ],
+            [
+              0.8986048062721551,
+              2
+            ],
+            [
+              0.8822050813406156,
+              1
+            ],
+            [
+              0.8690243725212812,
+              1
+            ],
+            [
+              0.867879663934781,
+              1
+            ],
+            [
+              0.8644207351390008,
+              18
+            ],
+            [
+              0.8558940476724949,
+              2
+            ],
+            [
+              0.8459881092016435,
+              1
+            ],
+            [
+              0.8157417784132047,
+              1
+            ],
+            [
+              0.8110137139246887,
+              11
+            ],
+            [
+              0.7658164539868104,
+              1
+            ]
+          ],
+          "top_cos2": 0.9817139010291784,
+          "inclusion_norm2": 142.25304460643457,
+          "center_dim": 7,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            3,
+            5,
+            5,
+            9
+          ],
+          "mix_from_1": 1.0000000000000002
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.1798058983988962,
+          "starts": [
+            "d2"
+          ]
+        },
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.8201941016011038,
+          "starts": [
+            "A",
+            "a2"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 2.893933057785034
+    },
+    {
+      "id": "B03",
+      "family": "ah",
+      "s": "pi/3",
+      "t": "7/5",
+      "s_latex": "\\frac{\\pi}{3}",
+      "t_latex": "\\frac{7}{5}",
+      "note": "unequal AH parameters",
+      "max_n": 4,
+      "phase": null,
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 10,
+          "dim_intersection": 6,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.9915167986081804,
+              1
+            ],
+            [
+              0.9889048101490131,
+              2
+            ],
+            [
+              0.9628116703911951,
+              1
+            ]
+          ],
+          "top_cos2": 0.9915167986081804,
+          "inclusion_norm2": 12.596209061489741,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            2
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 44,
+          "dim_intersection": 16,
+          "interior_count": 6,
+          "interior_eigenvalues": [
+            [
+              0.9915167986081809,
+              7
+            ],
+            [
+              0.9889048101490138,
+              10
+            ],
+            [
+              0.9824519203167271,
+              2
+            ],
+            [
+              0.9773289594279426,
+              1
+            ],
+            [
+              0.9725521355685489,
+              1
+            ],
+            [
+              0.9628116703911946,
+              7
+            ]
+          ],
+          "top_cos2": 0.9915167986081809,
+          "inclusion_norm2": 29.385045719900297,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            2,
+            3
+          ],
+          "mix_from_1": 1.0
+        },
+        {
+          "n": 3,
+          "dim_ambient": 200,
+          "dim_intersection": 47,
+          "interior_count": 13,
+          "interior_eigenvalues": [
+            [
+              0.9915167986081883,
+              36
+            ],
+            [
+              0.9914993544660207,
+              2
+            ],
+            [
+              0.9893207326471172,
+              1
+            ],
+            [
+              0.988904810149016,
+              40
+            ],
+            [
+              0.9837656131203544,
+              1
+            ],
+            [
+              0.9824519203167287,
+              14
+            ],
+            [
+              0.9773289594279444,
+              9
+            ],
+            [
+              0.9725521355685501,
+              9
+            ],
+            [
+              0.9628116703911967,
+              36
+            ],
+            [
+              0.9614737064647594,
+              1
+            ],
+            [
+              0.9582062779950888,
+              1
+            ],
+            [
+              0.9371144708386014,
+              2
+            ],
+            [
+              0.9112087145545905,
+              1
+            ]
+          ],
+          "top_cos2": 0.9915167986081883,
+          "inclusion_norm2": 65.26453160980337,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            4,
+            5
+          ],
+          "mix_from_1": 1.0000000000000002
+        },
+        {
+          "n": 4,
+          "dim_ambient": 912,
+          "dim_intersection": 146,
+          "interior_count": 30,
+          "interior_eigenvalues": [
+            [
+              0.9915167986081854,
+              161
+            ],
+            [
+              0.9914993544660209,
+              18
+            ],
+            [
+              0.9893207326471181,
+              11
+            ],
+            [
+              0.9889048101490171,
+              150
+            ],
+            [
+              0.9881251725765954,
+              2
+            ],
+            [
+              0.9837656131203553,
+              11
+            ],
+            [
+              0.9831663071319606,
+              1
+            ],
+            [
+              0.9824519203167293,
+              70
+            ],
+            [
+              0.9815981587287044,
+              1
+            ],
+            [
+              0.98013923888326,
+              1
+            ],
+            [
+              0.9773289594279446,
+              55
+            ],
+            [
+              0.9747654603120351,
+              2
+            ],
+            [
+              0.9726642251696105,
+              1
+            ],
+            [
+              0.9725521355685506,
+              55
+            ],
+            [
+              0.9671352222536109,
+              2
+            ],
+            [
+              0.9628116703911972,
+              161
+            ],
+            [
+              0.9614737064647603,
+              11
+            ],
+            [
+              0.9600039938785212,
+              2
+            ],
+            [
+              0.9582062779950893,
+              11
+            ],
+            [
+              0.9580696913616019,
+              1
+            ],
+            [
+              0.9537032348815241,
+              2
+            ],
+            [
+              0.9451392015570153,
+              1
+            ],
+            [
+              0.9389635367926413,
+              1
+            ],
+            [
+              0.9382840892325552,
+              1
+            ],
+            [
+              0.9371144708386021,
+              18
+            ],
+            [
+              0.9325173310936946,
+              2
+            ],
+            [
+              0.9283737506655406,
+              1
+            ],
+            [
+              0.9134512168574619,
+              1
+            ],
+            [
+              0.9112087145545916,
+              11
+            ],
+            [
+              0.8883639372931917,
+              1
+            ]
+          ],
+          "top_cos2": 0.9915167986081854,
+          "inclusion_norm2": 142.2530446064345,
+          "center_dim": 7,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            3,
+            5,
+            5,
+            9
+          ],
+          "mix_from_1": 1.0000000000000002
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.1798058983988962,
+          "starts": [
+            "d2"
+          ]
+        },
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.8201941016011037,
+          "starts": [
+            "A",
+            "a2"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 2.9148361682891846
+    },
+    {
+      "id": "B04",
+      "family": "ah",
+      "s": "pi/3",
+      "t": "2*pi/3",
+      "s_latex": "\\frac{\\pi}{3}",
+      "t_latex": "\\frac{2 \\pi}{3}",
+      "note": "unequal AH parameters",
+      "max_n": 4,
+      "phase": null,
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 10,
+          "dim_intersection": 6,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.9291135482926328,
+              1
+            ],
+            [
+              0.9044706482661609,
+              2
+            ],
+            [
+              0.7045378115490382,
+              1
+            ]
+          ],
+          "top_cos2": 0.9291135482926328,
+          "inclusion_norm2": 12.596209061489741,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            2
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 44,
+          "dim_intersection": 16,
+          "interior_count": 6,
+          "interior_eigenvalues": [
+            [
+              0.9291135482926324,
+              7
+            ],
+            [
+              0.9044706482661606,
+              10
+            ],
+            [
+              0.8564842683341235,
+              2
+            ],
+            [
+              0.8094601212908578,
+              1
+            ],
+            [
+              0.7833983167229744,
+              1
+            ],
+            [
+              0.7045378115490387,
+              7
+            ]
+          ],
+          "top_cos2": 0.9291135482926324,
+          "inclusion_norm2": 29.385045719900297,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            2,
+            3
+          ],
+          "mix_from_1": 1.0000000000000002
+        },
+        {
+          "n": 3,
+          "dim_ambient": 200,
+          "dim_intersection": 47,
+          "interior_count": 13,
+          "interior_eigenvalues": [
+            [
+              0.9291135482926396,
+              36
+            ],
+            [
+              0.9287828157027355,
+              2
+            ],
+            [
+              0.9156557776529457,
+              1
+            ],
+            [
+              0.9044706482661633,
+              40
+            ],
+            [
+              0.8639543022287942,
+              1
+            ],
+            [
+              0.8564842683341249,
+              14
+            ],
+            [
+              0.809460121290859,
+              9
+            ],
+            [
+              0.7833983167229758,
+              9
+            ],
+            [
+              0.7045378115490399,
+              36
+            ],
+            [
+              0.7041895872029063,
+              1
+            ],
+            [
+              0.6817299350542974,
+              1
+            ],
+            [
+              0.5377418923979271,
+              2
+            ],
+            [
+              0.4001784192493672,
+              1
+            ]
+          ],
+          "top_cos2": 0.9291135482926396,
+          "inclusion_norm2": 65.26453160980337,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            4,
+            5
+          ],
+          "mix_from_1": 1.0000000000000004
+        },
+        {
+          "n": 4,
+          "dim_ambient": 912,
+          "dim_intersection": 146,
+          "interior_count": 30,
+          "interior_eigenvalues": [
+            [
+              0.9291135482926373,
+              161
+            ],
+            [
+              0.9287828157027355,
+              18
+            ],
+            [
+              0.9156557776529467,
+              11
+            ],
+            [
+              0.904470648266164,
+              150
+            ],
+            [
+              0.9033953386248824,
+              2
+            ],
+            [
+              0.8650672120626588,
+              1
+            ],
+            [
+              0.8639543022287949,
+              11
+            ],
+            [
+              0.8564842683341254,
+              70
+            ],
+            [
+              0.8479794902177346,
+              1
+            ],
+            [
+              0.8359215886058008,
+              1
+            ],
+            [
+              0.8094601212908592,
+              55
+            ],
+            [
+              0.797028479213799,
+              2
+            ],
+            [
+              0.7866170113085973,
+              1
+            ],
+            [
+              0.7833983167229768,
+              55
+            ],
+            [
+              0.7426364503659783,
+              2
+            ],
+            [
+              0.7045378115490425,
+              161
+            ],
+            [
+              0.7041895872029064,
+              11
+            ],
+            [
+              0.6937559585293493,
+              2
+            ],
+            [
+              0.6837864075309308,
+              1
+            ],
+            [
+              0.6817299350542982,
+              11
+            ],
+            [
+              0.6390947271886511,
+              2
+            ],
+            [
+              0.5970249561464185,
+              1
+            ],
+            [
+              0.5591388662924205,
+              1
+            ],
+            [
+              0.5505063319533495,
+              1
+            ],
+            [
+              0.5377418923979276,
+              18
+            ],
+            [
+              0.5171322367841067,
+              2
+            ],
+            [
+              0.48912861922266904,
+              1
+            ],
+            [
+              0.4132557521122357,
+              1
+            ],
+            [
+              0.4001784192493683,
+              11
+            ],
+            [
+              0.2965993710078446,
+              1
+            ]
+          ],
+          "top_cos2": 0.9291135482926373,
+          "inclusion_norm2": 142.2530446064345,
+          "center_dim": 7,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            3,
+            5,
+            5,
+            9
+          ],
+          "mix_from_1": 1.0000000000000002
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.17980589839889624,
+          "starts": [
+            "d2"
+          ]
+        },
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.8201941016011036,
+          "starts": [
+            "A",
+            "a2"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 2.7973954677581787
+    },
+    {
+      "id": "B05",
+      "family": "ah",
+      "s": "pi/3",
+      "t": "pi",
+      "s_latex": "\\frac{\\pi}{3}",
+      "t_latex": "\\pi",
+      "note": "unequal AH parameters",
+      "max_n": 4,
+      "phase": null,
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 10,
+          "dim_intersection": 6,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.6990903313344059,
+              1
+            ],
+            [
+              0.6802030821525953,
+              2
+            ],
+            [
+              0.2198372092387654,
+              1
+            ]
+          ],
+          "top_cos2": 0.6990903313344059,
+          "inclusion_norm2": 12.596209061489741,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            2
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 44,
+          "dim_intersection": 16,
+          "interior_count": 6,
+          "interior_eigenvalues": [
+            [
+              0.6990903313344068,
+              7
+            ],
+            [
+              0.6802030821525958,
+              10
+            ],
+            [
+              0.5117127558974243,
+              2
+            ],
+            [
+              0.4754092445748376,
+              1
+            ],
+            [
+              0.38224480460625143,
+              1
+            ],
+            [
+              0.2198372092387654,
+              7
+            ]
+          ],
+          "top_cos2": 0.6990903313344068,
+          "inclusion_norm2": 29.385045719900283,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            2,
+            3
+          ],
+          "mix_from_1": 0.9999999999999999
+        },
+        {
+          "n": 3,
+          "dim_ambient": 200,
+          "dim_intersection": 47,
+          "interior_count": 13,
+          "interior_eigenvalues": [
+            [
+              0.7464146204497591,
+              2
+            ],
+            [
+              0.7020377715789691,
+              1
+            ],
+            [
+              0.6990903313344079,
+              36
+            ],
+            [
+              0.6802030821525978,
+              40
+            ],
+            [
+              0.600991210174048,
+              1
+            ],
+            [
+              0.5117127558974257,
+              14
+            ],
+            [
+              0.47540924457483896,
+              9
+            ],
+            [
+              0.38224480460625226,
+              9
+            ],
+            [
+              0.22487786298430737,
+              1
+            ],
+            [
+              0.21983720923876582,
+              36
+            ],
+            [
+              0.16546425332668396,
+              1
+            ],
+            [
+              0.04719842703213702,
+              2
+            ],
+            [
+              0.00018646148597879303,
+              1
+            ]
+          ],
+          "top_cos2": 0.7464146204497591,
+          "inclusion_norm2": 65.26453160980337,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            4,
+            5
+          ],
+          "mix_from_1": 1.0000000000000002
+        },
+        {
+          "n": 4,
+          "dim_ambient": 912,
+          "dim_intersection": 146,
+          "interior_count": 30,
+          "interior_eigenvalues": [
+            [
+              0.7464146204497593,
+              18
+            ],
+            [
+              0.7020377715789707,
+              11
+            ],
+            [
+              0.6990903313344095,
+              161
+            ],
+            [
+              0.6802030821525984,
+              150
+            ],
+            [
+              0.662091403235786,
+              2
+            ],
+            [
+              0.600991210174049,
+              11
+            ],
+            [
+              0.5824379619573844,
+              1
+            ],
+            [
+              0.5500502239986536,
+              1
+            ],
+            [
+              0.5440720133642328,
+              1
+            ],
+            [
+              0.511712755897427,
+              70
+            ],
+            [
+              0.4754092445748393,
+              55
+            ],
+            [
+              0.3872336067158041,
+              2
+            ],
+            [
+              0.38224480460625293,
+              55
+            ],
+            [
+              0.3505749394707711,
+              1
+            ],
+            [
+              0.275938114802387,
+              2
+            ],
+            [
+              0.23248675093881135,
+              2
+            ],
+            [
+              0.22487786298430754,
+              11
+            ],
+            [
+              0.22009714463421295,
+              1
+            ],
+            [
+              0.21983720923876635,
+              161
+            ],
+            [
+              0.18290714366829114,
+              2
+            ],
+            [
+              0.1654642533266843,
+              11
+            ],
+            [
+              0.12943685084556572,
+              1
+            ],
+            [
+              0.08146137800304623,
+              1
+            ],
+            [
+              0.06278831733114455,
+              1
+            ],
+            [
+              0.047198427032137155,
+              18
+            ],
+            [
+              0.03458358123880588,
+              1
+            ],
+            [
+              0.030768045382153223,
+              1
+            ],
+            [
+              0.017864099760957014,
+              2
+            ],
+            [
+              0.00026232258665836886,
+              1
+            ],
+            [
+              0.0001864614859787962,
+              11
+            ]
+          ],
+          "top_cos2": 0.7464146204497593,
+          "inclusion_norm2": 142.25304460643454,
+          "center_dim": 7,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            3,
+            5,
+            5,
+            9
+          ],
+          "mix_from_1": 0.9999999999999999
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.1798058983988962,
+          "starts": [
+            "d2"
+          ]
+        },
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.8201941016011038,
+          "starts": [
+            "A",
+            "a2"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 2.837160348892212
+    },
+    {
+      "id": "B06",
+      "family": "ah",
+      "s": "pi/3",
+      "t": "4*pi/3",
+      "s_latex": "\\frac{\\pi}{3}",
+      "t_latex": "\\frac{4 \\pi}{3}",
+      "note": "unequal AH parameters",
+      "max_n": 4,
+      "phase": null,
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 10,
+          "dim_intersection": 6,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.453602182249885,
+              2
+            ],
+            [
+              0.3293454101074458,
+              1
+            ],
+            [
+              0.018145360800728497,
+              1
+            ]
+          ],
+          "top_cos2": 0.453602182249885,
+          "inclusion_norm2": 12.596209061489741,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            2
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 44,
+          "dim_intersection": 16,
+          "interior_count": 6,
+          "interior_eigenvalues": [
+            [
+              0.45360218224988563,
+              10
+            ],
+            [
+              0.32934541010744595,
+              7
+            ],
+            [
+              0.3276171210697676,
+              1
+            ],
+            [
+              0.16661075706699405,
+              2
+            ],
+            [
+              0.13608500198043416,
+              1
+            ],
+            [
+              0.018145360800728524,
+              7
+            ]
+          ],
+          "top_cos2": 0.45360218224988563,
+          "inclusion_norm2": 29.385045719900297,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            2,
+            3
+          ],
+          "mix_from_1": 1.0
+        },
+        {
+          "n": 3,
+          "dim_ambient": 200,
+          "dim_intersection": 47,
+          "interior_count": 13,
+          "interior_eigenvalues": [
+            [
+              0.6540142820262206,
+              1
+            ],
+            [
+              0.513857433781691,
+              2
+            ],
+            [
+              0.4536021822498868,
+              40
+            ],
+            [
+              0.36715170077267406,
+              1
+            ],
+            [
+              0.3293454101074463,
+              36
+            ],
+            [
+              0.3276171210697682,
+              9
+            ],
+            [
+              0.16661075706699446,
+              14
+            ],
+            [
+              0.13608500198043466,
+              9
+            ],
+            [
+              0.07777373902361462,
+              1
+            ],
+            [
+              0.040838232518438454,
+              2
+            ],
+            [
+              0.03164774989383416,
+              1
+            ],
+            [
+              0.0181453608007286,
+              36
+            ],
+            [
+              0.01321426828700029,
+              1
+            ]
+          ],
+          "top_cos2": 0.6540142820262206,
+          "inclusion_norm2": 65.26453160980334,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            4,
+            5
+          ],
+          "mix_from_1": 1.0
+        },
+        {
+          "n": 4,
+          "dim_ambient": 912,
+          "dim_intersection": 146,
+          "interior_count": 30,
+          "interior_eigenvalues": [
+            [
+              0.6540142820262234,
+              11
+            ],
+            [
+              0.5578594126752093,
+              1
+            ],
+            [
+              0.513857433781695,
+              18
+            ],
+            [
+              0.4536406416842692,
+              2
+            ],
+            [
+              0.45360218224988863,
+              150
+            ],
+            [
+              0.44110379687124773,
+              1
+            ],
+            [
+              0.37699324984757704,
+              1
+            ],
+            [
+              0.36715170077267645,
+              11
+            ],
+            [
+              0.32934541010744833,
+              161
+            ],
+            [
+              0.32761712106977015,
+              55
+            ],
+            [
+              0.28640732034222977,
+              1
+            ],
+            [
+              0.21796238252957612,
+              1
+            ],
+            [
+              0.2083472131131813,
+              2
+            ],
+            [
+              0.16661075706699505,
+              70
+            ],
+            [
+              0.16549058945835848,
+              2
+            ],
+            [
+              0.1534598755097897,
+              1
+            ],
+            [
+              0.14955814525694724,
+              2
+            ],
+            [
+              0.1360850019804352,
+              55
+            ],
+            [
+              0.10762918636315462,
+              1
+            ],
+            [
+              0.0777737390236148,
+              11
+            ],
+            [
+              0.04083823251843851,
+              18
+            ],
+            [
+              0.04058802893797707,
+              1
+            ],
+            [
+              0.03950185787937819,
+              1
+            ],
+            [
+              0.03623731346662337,
+              2
+            ],
+            [
+              0.034011836259347346,
+              2
+            ],
+            [
+              0.031647749893834266,
+              11
+            ],
+            [
+              0.018145360800728736,
+              161
+            ],
+            [
+              0.013214268287000343,
+              11
+            ],
+            [
+              0.007130879520551548,
+              1
+            ],
+            [
+              0.00450605673171965,
+              1
+            ]
+          ],
+          "top_cos2": 0.6540142820262234,
+          "inclusion_norm2": 142.25304460643457,
+          "center_dim": 7,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            3,
+            5,
+            5,
+            9
+          ],
+          "mix_from_1": 1.0000000000000004
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.17980589839889619,
+          "starts": [
+            "d2"
+          ]
+        },
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.8201941016011037,
+          "starts": [
+            "A",
+            "a2"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 2.7615966796875
+    },
+    {
+      "id": "B07",
+      "family": "ah",
+      "s": "pi/3",
+      "t": "5*pi/3",
+      "s_latex": "\\frac{\\pi}{3}",
+      "t_latex": "\\frac{5 \\pi}{3}",
+      "note": "unequal AH parameters",
+      "max_n": 4,
+      "phase": null,
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 10,
+          "dim_intersection": 6,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.2613662462940366,
+              2
+            ],
+            [
+              0.20127450316321435,
+              1
+            ],
+            [
+              0.019190934673672735,
+              1
+            ]
+          ],
+          "top_cos2": 0.2613662462940366,
+          "inclusion_norm2": 12.596209061489748,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            2
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 44,
+          "dim_intersection": 16,
+          "interior_count": 6,
+          "interior_eigenvalues": [
+            [
+              0.32880009607974087,
+              1
+            ],
+            [
+              0.2613662462940366,
+              10
+            ],
+            [
+              0.2012745031632143,
+              7
+            ],
+            [
+              0.051680003954623,
+              2
+            ],
+            [
+              0.04876265156954989,
+              1
+            ],
+            [
+              0.01919093467367276,
+              7
+            ]
+          ],
+          "top_cos2": 0.32880009607974087,
+          "inclusion_norm2": 29.385045719900297,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            2,
+            3
+          ],
+          "mix_from_1": 1.0
+        },
+        {
+          "n": 3,
+          "dim_ambient": 200,
+          "dim_intersection": 47,
+          "interior_count": 13,
+          "interior_eigenvalues": [
+            [
+              0.6703133730883831,
+              1
+            ],
+            [
+              0.39060926051015926,
+              2
+            ],
+            [
+              0.32880009607974237,
+              9
+            ],
+            [
+              0.2613662462940376,
+              40
+            ],
+            [
+              0.24699625331981787,
+              1
+            ],
+            [
+              0.20127450316321516,
+              36
+            ],
+            [
+              0.14289037068539726,
+              1
+            ],
+            [
+              0.051680003954623126,
+              14
+            ],
+            [
+              0.050803239094234176,
+              2
+            ],
+            [
+              0.04876265156955004,
+              9
+            ],
+            [
+              0.019190934673672853,
+              36
+            ],
+            [
+              0.012444653012159513,
+              1
+            ],
+            [
+              5.678749450447733e-05,
+              1
+            ]
+          ],
+          "top_cos2": 0.6703133730883831,
+          "inclusion_norm2": 65.26453160980333,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            4,
+            5
+          ],
+          "mix_from_1": 1.0000000000000002
+        },
+        {
+          "n": 4,
+          "dim_ambient": 912,
+          "dim_intersection": 146,
+          "interior_count": 30,
+          "interior_eigenvalues": [
+            [
+              0.7111990718193607,
+              1
+            ],
+            [
+              0.6703133730883868,
+              11
+            ],
+            [
+              0.6434161985900616,
+              2
+            ],
+            [
+              0.4550867118853616,
+              1
+            ],
+            [
+              0.424875350518874,
+              1
+            ],
+            [
+              0.39060926051015993,
+              18
+            ],
+            [
+              0.3861598684072748,
+              2
+            ],
+            [
+              0.3521365273933457,
+              1
+            ],
+            [
+              0.32880009607974325,
+              55
+            ],
+            [
+              0.27735122224539543,
+              1
+            ],
+            [
+              0.2737828989063071,
+              2
+            ],
+            [
+              0.2613662462940383,
+              150
+            ],
+            [
+              0.24699625331981942,
+              11
+            ],
+            [
+              0.21727959537948036,
+              2
+            ],
+            [
+              0.20127450316321616,
+              161
+            ],
+            [
+              0.1684777617183823,
+              1
+            ],
+            [
+              0.14289037068539737,
+              11
+            ],
+            [
+              0.12450910337457917,
+              1
+            ],
+            [
+              0.09078066843013943,
+              1
+            ],
+            [
+              0.051680003954623265,
+              70
+            ],
+            [
+              0.050803239094234315,
+              18
+            ],
+            [
+              0.04876265156955015,
+              55
+            ],
+            [
+              0.0387764330425795,
+              2
+            ],
+            [
+              0.0344742819520833,
+              2
+            ],
+            [
+              0.01919093467367299,
+              161
+            ],
+            [
+              0.012444653012159534,
+              11
+            ],
+            [
+              0.007805773764078944,
+              1
+            ],
+            [
+              0.0019100243204913814,
+              1
+            ],
+            [
+              0.00023775560089319238,
+              1
+            ],
+            [
+              5.678749450447816e-05,
+              11
+            ]
+          ],
+          "top_cos2": 0.7111990718193607,
+          "inclusion_norm2": 142.25304460643463,
+          "center_dim": 7,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            3,
+            5,
+            5,
+            9
+          ],
+          "mix_from_1": 1.0
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.1798058983988962,
+          "starts": [
+            "d2"
+          ]
+        },
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.8201941016011037,
+          "starts": [
+            "A",
+            "a2"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 2.970010280609131
+    },
+    {
+      "id": "B08",
+      "family": "ah",
+      "s": "pi/3",
+      "t": "1/10",
+      "s_latex": "\\frac{\\pi}{3}",
+      "t_latex": "\\frac{1}{10}",
+      "note": "unequal AH parameters",
+      "max_n": 4,
+      "phase": null,
+      "records": [
+        {
+          "n": 1,
+          "dim_ambient": 10,
+          "dim_intersection": 6,
+          "interior_count": 3,
+          "interior_eigenvalues": [
+            [
+              0.9327835923335301,
+              2
+            ],
+            [
+              0.9198422239444481,
+              1
+            ],
+            [
+              0.7808712139575388,
+              1
+            ]
+          ],
+          "top_cos2": 0.9327835923335301,
+          "inclusion_norm2": 12.596209061489741,
+          "center_dim": 3,
+          "block_sizes": [
+            1,
+            1,
+            2
+          ],
+          "mix_from_1": null
+        },
+        {
+          "n": 2,
+          "dim_ambient": 44,
+          "dim_intersection": 16,
+          "interior_count": 6,
+          "interior_eigenvalues": [
+            [
+              0.932783592333531,
+              10
+            ],
+            [
+              0.9198422239444477,
+              7
+            ],
+            [
+              0.8788107545858154,
+              1
+            ],
+            [
+              0.8627773744924856,
+              2
+            ],
+            [
+              0.8247316411745245,
+              1
+            ],
+            [
+              0.7808712139575386,
+              7
+            ]
+          ],
+          "top_cos2": 0.932783592333531,
+          "inclusion_norm2": 29.385045719900297,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            1,
+            2,
+            3
+          ],
+          "mix_from_1": 1.0
+        },
+        {
+          "n": 3,
+          "dim_ambient": 200,
+          "dim_intersection": 47,
+          "interior_count": 13,
+          "interior_eigenvalues": [
+            [
+              0.9343500383562161,
+              2
+            ],
+            [
+              0.9327835923335318,
+              40
+            ],
+            [
+              0.9198422239444501,
+              36
+            ],
+            [
+              0.9192874942068434,
+              1
+            ],
+            [
+              0.8885822407073429,
+              1
+            ],
+            [
+              0.8788107545858165,
+              9
+            ],
+            [
+              0.862777374492487,
+              14
+            ],
+            [
+              0.8247316411745255,
+              9
+            ],
+            [
+              0.7808712139575406,
+              36
+            ],
+            [
+              0.7494312725798977,
+              1
+            ],
+            [
+              0.694879730485988,
+              1
+            ],
+            [
+              0.6644731229007032,
+              2
+            ],
+            [
+              0.5533416412009174,
+              1
+            ]
+          ],
+          "top_cos2": 0.9343500383562161,
+          "inclusion_norm2": 65.26453160980337,
+          "center_dim": 5,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            4,
+            5
+          ],
+          "mix_from_1": 1.0
+        },
+        {
+          "n": 4,
+          "dim_ambient": 912,
+          "dim_intersection": 146,
+          "interior_count": 30,
+          "interior_eigenvalues": [
+            [
+              0.9343500383562183,
+              18
+            ],
+            [
+              0.9327835923335435,
+              150
+            ],
+            [
+              0.9198422239444644,
+              161
+            ],
+            [
+              0.9192874942068447,
+              11
+            ],
+            [
+              0.903320327054607,
+              2
+            ],
+            [
+              0.8936770238509683,
+              1
+            ],
+            [
+              0.8885822407073436,
+              11
+            ],
+            [
+              0.882974365729666,
+              1
+            ],
+            [
+              0.8788107545858169,
+              55
+            ],
+            [
+              0.8649821728719203,
+              1
+            ],
+            [
+              0.8627773744924881,
+              70
+            ],
+            [
+              0.8247316411745265,
+              55
+            ],
+            [
+              0.8241765760941262,
+              2
+            ],
+            [
+              0.8011352067999452,
+              2
+            ],
+            [
+              0.788636461363582,
+              1
+            ],
+            [
+              0.7808712139575421,
+              161
+            ],
+            [
+              0.7601227809461418,
+              2
+            ],
+            [
+              0.7494312725798976,
+              11
+            ],
+            [
+              0.7338094678628648,
+              2
+            ],
+            [
+              0.7209978508348356,
+              1
+            ],
+            [
+              0.7077884347739456,
+              1
+            ],
+            [
+              0.6948797304859887,
+              11
+            ],
+            [
+              0.6644731229007038,
+              18
+            ],
+            [
+              0.6642444888550356,
+              1
+            ],
+            [
+              0.6346750101375773,
+              1
+            ],
+            [
+              0.6086012363538852,
+              1
+            ],
+            [
+              0.6026473495339858,
+              2
+            ],
+            [
+              0.5533416412009182,
+              11
+            ],
+            [
+              0.5301425355836018,
+              1
+            ],
+            [
+              0.42485825177009023,
+              1
+            ]
+          ],
+          "top_cos2": 0.9343500383562183,
+          "inclusion_norm2": 142.25304460643463,
+          "center_dim": 7,
+          "block_sizes": [
+            1,
+            1,
+            2,
+            3,
+            5,
+            5,
+            9
+          ],
+          "mix_from_1": 1.0
+        }
+      ],
+      "components": [
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.1798058983988962,
+          "starts": [
+            "d2"
+          ]
+        },
+        {
+          "levels": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "trace": 0.8201941016011036,
+          "starts": [
+            "A",
+            "a2"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "name": "spectral and algebra dimensions agree",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=1 persists at n=2",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=2 persists at n=3",
+          "passed": true
+        },
+        {
+          "name": "spectrum at n=3 persists at n=4",
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "seconds": 2.803252935409546
+    }
+  ],
+  "comparisons": [
+    {
+      "pairs": [
+        "H04",
+        "H05"
+      ],
+      "passed": true
+    },
+    {
+      "pairs": [
+        "H06",
+        "H07"
+      ],
+      "passed": true
+    },
+    {
+      "pairs": [
+        "H06",
+        "H08"
+      ],
+      "passed": true
+    },
+    {
+      "pairs": [
+        "H11",
+        "H12"
+      ],
+      "passed": true
+    }
+  ],
+  "complete": true
+}

@@ -24,6 +24,7 @@ demo.py         a worked example, start to finish
 ah_demo.py      the Asaeda-Haagerup square of S1122.txt, same shape as demo.py
                 (from arXiv:2509.00227, section 5)
 s1133_demo.py   the same for the 4-star S(1,1,3,3), index 3 + sqrt(3)
+hadamard4_demo.py  relative commutants along the 4 x 4 Hadamard family (see below)
 intersection_demo.py  N_s cap N_s' for two members of a family (see below)
 test_pathalg.py the test suite (python test_pathalg.py [--slow])
 ```
@@ -276,7 +277,7 @@ Rough exact timings (this machine): `A_3` at `n = 3` all checks ≈ 20s, all
 relative commutants ≈ instant. With `backend="numpy"`, `A_4` at `n = 4`
 (`dim H_5 = 21`) ≈ 8s.
 
-For the Asaeda-Haagerup square of `ah_demo.py` — the `S(1,1,2,2)` case of the
+For the square at the Asaeda-Haagerup index in `ah_demo.py` — the `S(1,1,2,2)` case of the
 one-parameter family of connections on 4-stars in §5 of Bisch–Cáceres, *[New
 hyperfinite subfactors with infinite depth](https://arxiv.org/abs/2509.00227)*,
 arXiv:2509.00227 — `dim A_(0,1)' cap A_(n,0)`, on an RTX 4070 SUPER:
@@ -288,11 +289,60 @@ arXiv:2509.00227 — `dim A_(0,1)' cap A_(n,0)`, on an RTX 4070 SUPER:
 | 7 | 912 | 41096 | 429 | needs ~85 GB | needs ~85 GB | needs ~43 GB | 10.7s (1.2 GB) |
 | 8 | 2664 | 187458 | 1430 | needs ~2.2 TB | needs ~2.2 TB | needs ~1.1 TB | 157s (5.6 GB) |
 
+Asaeda-Haagerup is **5-supertransitive**: its first five dimensions are
+also `1, 2, 5, 14, 42`. The first distinguishing level is 6, where TLJ
+has dimension 132 and AH has dimension 133. Matching the level-5 Catalan
+number does not distinguish them. The paper's Section 5 does not give
+an explicit list of the exceptional parameters. The focused
+`ah_parameter_scan.py` screens level 6 in double precision and records
+numerical evidence, not exact rank certificates or an exhaustive classification.
+
 `k` is the dimension of the outer commutant that gets cut down. The `cupy` /
 `cupy64` gap is the card: consumer GeForce parts run `float64` at 1/64 rate, so
 `complex128` matmul measures 524 GFLOP/s against 12.3 TFLOP/s for `complex64`.
-Single precision is safe here because every decision is that principal angle,
-and 0.96 against 1.0 is nowhere near seven digits.
+Every decision is that principal angle, and 0.96 against 1.0 is nowhere near
+seven digits, but single precision is only safe on the iterative route. See the
+dense `complex64` caveat under [Caveats](#caveats).
+
+## The 4 x 4 Hadamard family
+
+[hadamard4_demo.py](hadamard4_demo.py) runs the one-parameter family
+`f4_family(a)` (`q = i e^{ia}`), which by Haagerup's classification is every
+`4 x 4` complex Hadamard matrix up to equivalence. All of it has index 4.
+`dim A_(0,1)' cap A_(n,0)`, in 4 to 17 s per parameter on the same card:
+
+| a | graph | n = 1..7 |
+| --- | --- | --- |
+| 0, pi/2 | `D_4^(1)` | 1, 4, 16, 64, 256, 1024, 4096 |
+| pi/4 | `D_6^(1)` | 1, 3, 10, **36**, 136, 528, 2080 |
+| pi/3, pi/6 | `D_8^(1)` | 1, 3, 10, 35, 126, **463**, 1730 |
+| pi/8, 3pi/8 | `D_10^(1)` | 1, 3, 10, 35, 126, 462, 1716 |
+| pi/5, 2pi/5 | `D_12^(1)` | 1, 3, 10, 35, 126, 462, 1716 |
+| pi/12, 5pi/12 | `D_14^(1)` | 1, 3, 10, 35, 126, 462, 1716 |
+| 1, sqrt(2) | `D_infinity` | 1, 3, 10, 35, 126, 462, 1716 |
+
+These are closed walks at a fork tip of `D_(m+2)^(1)`, the chain with a fork at
+each end, where `m = 2 ord(q^4) = 2 denominator(2a / pi)`. Generic `a` gives
+`D_infinity`, `binomial(2n - 1, n)`. Bold is the first level to leave
+`D_infinity`, which is `n = m`, by exactly 1. The dual side
+`dim A_(1,1)' cap A_(n,0)` gives the same sequence one level later.
+
+How far that is established:
+
+- Every row was checked against the graph on both sides through `n = 7`, and
+  against `T_p`, a count using no path algebra, through `p = 5`.
+- The jump itself has only been seen for `m = 2, 4, 6`. Seeing `m = 8` needs
+  `n = 8`, and the block needs more than the 12 GB of this card. For
+  `m = 8, 10, 12` the evidence is no jump through `n = 7` and the largest
+  discarded cosine, which is `cos(pi / m)` in every rational row.
+- The rule for `m` is an observation, not a theorem proved here. It agrees with
+  the dihedral twists reported for this family, `O_(-1)(2)` when `q` has
+  infinite order.
+
+Near a special value `a_0` the largest discarded cosine is about
+`cos(2 (a - a_0))`, so the cut closes. At `a = pi/4 + 0.01` the iterative route
+stops with a non-convergence error, and the demo reports anything above 0.999
+as unresolved instead of a number.
 
 ## Intersections of two members of a family
 
@@ -322,16 +372,44 @@ dimensions, exactly:
 - **Index.** If `[M : P cap Q] < oo`, then `e_P` and `e_Q` lie in a
   finite-dimensional relative commutant and the spectrum is finite. A growing
   number of distinct eigenvalues rules finite index out. That number is a
-  certified lower bound whenever the gaps between them exceed the rounding
-  error, which is about `1e-13` in double precision.
-  `||Lambda(C_n < A_{n,1})||^2` is also reported. It equals the index at every
-  level in every finite-index case checked, and growth points to infinite
-  index.
+  numerical lower bound when eigenvalues are reliably separated; these
+  floating-point calculations are not interval certificates.
+  `||Lambda(C_n < A_{n,1})||^2` is also reported. It can reach the limiting
+  index only at a later level: growth over finitely many levels does not
+  establish infinite index.
 
 Validated on the subfactor itself (`s = t`: `C_n = A_{n,0}`, `||Lambda||^2 = delta^2`),
 and against the paper's Theorem B (`U = F_4`, `V = D U`, which is `F_4 D` in
 this library's convention): `|H| = dim C_1`, the index `16 / |H|` at every
 level, a finite spectrum, and a factor.
+
+`intersection_demo.py` now uses actual pairs `f4_family(s), f4_family(t)`
+in Part A. Its 14 pairs cover equality (including a row swap at `t=s+pi`),
+proper commuting intersections, rational phases of orders 3, 4, 6, 8 and 10,
+irrational phases, and common shifts of both parameters. The relevant
+classification is Bakshi–Guin,
+[arXiv:2212.07197v3, Section 7](https://arxiv.org/html/2212.07197v3):
+if `(t-s)/pi=p/q` in lowest terms, the index benchmark is `4q`;
+irrational ratios give infinite Pimsner–Popa index. The later Fourier-conjugate
+paper's `16 / dim C_1` formula is not the rule for this deformation.
+
+The default run computes equality controls through level 4, proper Hadamard
+pairs through level 5, and eight retained S(1,1,2,2) pairs through level 4.
+It writes full-precision results to `intersection_demo_results.json`.
+Use `--section hadamard` or `--section ah` for a partial run and `--max-n N`
+to override depth. From the project root, run:
+
+```powershell
+& ./.venv/Scripts/python.exe -B -u Code/intersection_demo.py | Tee-Object Code/intersection_demo_output.txt
+& ./.venv/Scripts/python.exe -B Code/write_intersection_report.py
+pdflatex -output-directory=output/pdf output/pdf/intersection_results_explained.tex
+```
+
+The report generator requires the complete default run. It combines the
+mathematical exposition in `intersection_report_template.tex` with tables
+from the saved data. Its standalone TeX includes definitions, theorem
+statements, elementary proofs, and an explanation of every pair. The previous
+diagonal-family report is preserved in `output/pdf/archive/`.
 
 For S(1,1,2,2), `s = pi/3` against every `s'` tried:
 - `dim C_n` is 6, 16, 47, 146, 471, the same for all `s' != s`;
@@ -353,7 +431,7 @@ cross-Gram matrix, but only gives `dim C_n` and the largest angle below 1.
 ## Tests
 
 ```
-python test_pathalg.py            # 33 tests, ~2 minutes
+python test_pathalg.py            # 34 tests, ~2 minutes
 python test_pathalg.py --slow     # adds the heavy exact A_4 cases and AH n = 5
 ```
 
@@ -365,10 +443,20 @@ The ones with an answer from outside the library:
 - For the flat `A_m` connection, `dim A_{0,1}' cap A_{n,0}` equals the number of
   closed walks of length `2n` at the endpoint of the Dynkin diagram — `1,2,4,8`
   for `A_3`, `1,2,5,13` for `A_4`, `1,2,5` for `A_5`.
+- For the `4 x 4` Hadamard family, `dim A_{0,1}' cap A_{n,0}` equals the
+  multiplicity of 1 in `T_p`, a count that uses no path algebra.
 - The cheap relative-commutant basis matches a brute force linear solve on every
   algebra of every level tested.
 
 ## Caveats
+
+- **The dense `complex64` route can undercount, silently.** The eigenvalue 1 cut
+  is a fixed `1 - 1e-5`, and `eigh` on a large single precision matrix spreads
+  the cluster past it. For `f4_family(pi/5)` at `n = 7` (`k = 16384`) it returns
+  204 where the answer is 1716, while the true gap is 0.951 against 1. The sign
+  is a largest discarded cosine within about `1e-4` of 1 in `_last_angle_gap`.
+  The iterative route and `complex128` both give 1716, and `method="auto"` can
+  still pick dense here, so pass `method="iterative"` under `cupy64`.
 
 - Graphs must be **simple** (paths are recorded by their vertices only), and
   connected — `pf_bipartite` raises if the Perron-Frobenius vector is not
