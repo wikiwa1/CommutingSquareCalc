@@ -1,0 +1,167 @@
+{
+  "level": 6,
+  "results": [
+    {
+      "s": "0",
+      "s_numeric": 0.0,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9441569627166899,
+        0.9999999999999986
+      ],
+      "residual": 6.6831295234556224e-12,
+      "iterations": 5,
+      "seconds": 84.43799999996554
+    },
+    {
+      "s": "pi/2",
+      "s_numeric": 1.5707963267948966,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "unresolved": "Time allowance exceeded; no dimension reported.",
+      "seconds": 151.90600000007544
+    },
+    {
+      "s": "pi/2",
+      "s_numeric": 1.5707963267948966,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9101061789159315,
+        0.9999999999999986
+      ],
+      "residual": 2.7985690170236793e-15,
+      "iterations": 7,
+      "seconds": 111.53200000000652
+    },
+    {
+      "s": "pi",
+      "s_numeric": 3.141592653589793,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9441569627166898,
+        0.9999999999999986
+      ],
+      "residual": 3.58725124668097e-12,
+      "iterations": 5,
+      "seconds": 80.70299999997951
+    },
+    {
+      "s": "3*pi/2",
+      "s_numeric": 4.71238898038469,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9098523174052032,
+        0.9999999999999986
+      ],
+      "residual": 2.7266926500748594e-15,
+      "iterations": 7,
+      "seconds": 119.68800000008196
+    },
+    {
+      "s": "pi/4",
+      "s_numeric": 0.7853981633974483,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.992351499055744,
+        0.9999999999999987
+      ],
+      "residual": 2.58231846914525e-12,
+      "iterations": 5,
+      "seconds": 77.59399999992456
+    },
+    {
+      "s": "pi/3",
+      "s_numeric": 1.0471975511965979,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.961658188655921,
+        0.999999999999998
+      ],
+      "residual": 6.956178693668701e-11,
+      "iterations": 5,
+      "seconds": 78.625
+    },
+    {
+      "s": "pi/6",
+      "s_numeric": 0.5235987755982989,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9992816894182597,
+        0.9999999999999987
+      ],
+      "residual": 6.169519665065634e-13,
+      "iterations": 5,
+      "seconds": 81.875
+    },
+    {
+      "s": "2*pi/3",
+      "s_numeric": 2.0943951023931957,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.96165818865592,
+        0.9999999999999982
+      ],
+      "residual": 8.697198735943054e-11,
+      "iterations": 5,
+      "seconds": 80.875
+    },
+    {
+      "s": "3*pi/4",
+      "s_numeric": 2.356194490192345,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9923514990557436,
+        0.9999999999999984
+      ],
+      "residual": 4.760098339122852e-12,
+      "iterations": 5,
+      "seconds": 80.76500000001397
+    }
+  ],
+  "exhaustive": false
+}

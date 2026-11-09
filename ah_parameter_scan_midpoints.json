@@ -1,0 +1,159 @@
+{
+  "level": 6,
+  "results": [
+    {
+      "s": "pi/8",
+      "s_numeric": 0.39269908169872414,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9930283845730331,
+        0.9999999999999981
+      ],
+      "residual": 1.59458551227484e-12,
+      "iterations": 5,
+      "seconds": 96.95400000002701
+    },
+    {
+      "s": "3*pi/8",
+      "s_numeric": 1.1780972450961724,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9403698295501345,
+        0.9999999999999989
+      ],
+      "residual": 1.5725531158419116e-10,
+      "iterations": 5,
+      "seconds": 93.23400000005495
+    },
+    {
+      "s": "5*pi/8",
+      "s_numeric": 1.9634954084936207,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9403698295488917,
+        0.9999999999999986
+      ],
+      "residual": 3.1571442463708206e-10,
+      "iterations": 5,
+      "seconds": 88.89099999994505
+    },
+    {
+      "s": "7*pi/8",
+      "s_numeric": 2.748893571891069,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9930283845730331,
+        0.9999999999999983
+      ],
+      "residual": 1.8349035823949242e-12,
+      "iterations": 5,
+      "seconds": 91.73400000005495
+    },
+    {
+      "s": "9*pi/8",
+      "s_numeric": 3.5342917352885173,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9929992425585961,
+        0.9999999999999982
+      ],
+      "residual": 1.6819086726723841e-12,
+      "iterations": 5,
+      "seconds": 92.82799999997951
+    },
+    {
+      "s": "11*pi/8",
+      "s_numeric": 4.319689898685966,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9398430227274543,
+        0.9999999999999989
+      ],
+      "residual": 1.2868089723115457e-10,
+      "iterations": 5,
+      "seconds": 95.17200000002049
+    },
+    {
+      "s": "13*pi/8",
+      "s_numeric": 5.105088062083414,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9398430227273467,
+        0.9999999999999988
+      ],
+      "residual": 1.1876958561837624e-10,
+      "iterations": 5,
+      "seconds": 94.46900000004098
+    },
+    {
+      "s": "15*pi/8",
+      "s_numeric": 5.8904862254808625,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9929992425585954,
+        0.9999999999999976
+      ],
+      "residual": 1.8740461691181407e-12,
+      "iterations": 5,
+      "seconds": 76.42199999990407
+    },
+    {
+      "s": "1",
+      "s_numeric": 1.0,
+      "n": 6,
+      "backend": "numpy",
+      "method": "iterative",
+      "initial_block": 160,
+      "dimension": 132,
+      "numerical_classification": "TLJ-compatible",
+      "gap": [
+        0.9686103525308454,
+        0.9999999999999988
+      ],
+      "residual": 2.696291276975147e-11,
+      "iterations": 5,
+      "seconds": 80.90700000000652
+    }
+  ],
+  "exhaustive": false
+}

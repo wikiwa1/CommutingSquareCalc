@@ -1,4 +1,4 @@
-"""The Asaeda-Haagerup commuting square, worked through the same way as demo.py.
+"""The S(1,1,2,2) square at the Asaeda-Haagerup index.
 
 Run with ``python ah_demo.py``.
 
@@ -38,16 +38,18 @@ Asaeda-Haagerup subfactor, and the higher relative commutant dimensions
 
 are the invariant to look at.
 
-The connection is bi-unitary for every s, but it is not flat for every s: only
-finitely many parameters are expected to give the Asaeda-Haagerup subfactor,
-and the rest give A_infinity.  So the Catalan numbers 1, 2, 5, 14, 42, 132 are
-the *generic* answer here, not the target -- a run that reproduces them all the
-way up is reporting A_infinity, i.e. this s is not one of the special ones.
-Asaeda-Haagerup is 4-supertransitive, so its sequence agrees with Catalan
-through n = 4 as well; the two only part company at n = 5, where loops through
-the branch point of the principal graph push the dimension strictly above 42.
-Everything below n = 5 is consistent with both, so n = 5 is the only row of the
-table that decides anything.
+The connection is bi-unitary for every s. The paper's cardinality argument
+does not identify the parameters producing finite depth. At this index the
+classified alternatives are A_infinity and Asaeda-Haagerup (including its
+dual). Asaeda-Haagerup is 5-supertransitive, not 4-supertransitive: both
+sequences begin 1, 2, 5, 14, 42. Their first difference is at n = 6, where
+A_infinity gives 132 and Asaeda-Haagerup gives 133. See Jones, "Quadratic
+Tangles in Planar Algebras", Section 3.2 and Example 3.5.9.
+
+A certified dimension at level 6 would distinguish the classified
+alternatives. Floating-point results below are evidence, not exact rank
+certificates. Matching Catalan numbers only through n = 5 distinguishes
+nothing. ah_parameter_scan.py implements a focused level-6 screen.
 
 The knobs are all at the top.  Section 4 is the expensive one, and it is the
 reason the tower has a GPU backend: n = 6 takes 815 s in numpy and 5 s in
@@ -65,8 +67,8 @@ from pathalg import CommutingSquare, InsufficientMemory, Level, gpu_available
 # ------------------------------------------------------------------- 0. knobs
 
 # The parameter of the connection.  Every value in [0, 2 pi) gives a bi-unitary
-# connection; only finitely many are expected to be flat and give Asaeda-
-# Haagerup, the rest giving A_infinity.  So this is the knob to sweep.  Pick a
+# connection. The exceptional finite-depth parameters are not listed in the
+# cited paper. This is the knob to sweep at level 6 or higher. Pick a
 # value where cos(s) and exp(i s / 2) stay closed form to run exactly.
 S = sp.pi / 3
 
@@ -76,10 +78,9 @@ S = sp.pi / 3
 #   "sympy"   exact, and far too slow past about n = 3
 #   "numpy"   complex128 on the CPU
 #   "cupy"    complex128 on the GPU
-#   "cupy64"  complex64 on the GPU -- the fast one.  Single precision is safe
-#             here because every decision is a principal angle that lands
-#             either near 0.96 or at 1.0; section 4 prints the margin so you
-#             can watch it.
+#   "cupy64"  complex64 on the GPU -- faster, but unsuitable for resolving
+#             a possible exceptional parameter without double-precision
+#             confirmation. The spectral gap can close near exceptions.
 #   "auto"    "cupy64" if this machine has a usable GPU, else "numpy".  The
 #             default, so the same file runs everywhere; only the time differs.
 BACKEND = "auto"
@@ -181,7 +182,7 @@ def ah_cells(s, delta=DELTA):
 
 
 def ah_square(s=S, delta=DELTA, **kwargs):
-    """The Asaeda-Haagerup commuting square at parameter ``s``."""
+    """The S(1,1,2,2) square at parameter ``s`` and the AH index."""
     return CommutingSquare(
         V00=["a2", "A", "d2"],
         V01=["a1", "b1", "c1", "d1"],
@@ -254,7 +255,7 @@ def main():
         backend = "cupy64" if gpu_available() else "numpy"
 
     print("=" * 72)
-    print("1. the Asaeda-Haagerup square and its connection")
+    print("1. the S(1,1,2,2) square at the Asaeda-Haagerup index")
     print("=" * 72)
     print(f"  parameter s = {S}   (= {float(S):.6f}),  backend {backend}")
     w1, w2, z1, z2 = ah_params(S)
@@ -344,10 +345,10 @@ def main():
     print("=" * 72)
     print("  dim A_(0,1)' cap A_(n,0) is the number of loops of length 2n at *")
     print("  in the principal graph.  Catalan is the A_infinity answer, and it")
-    print("  is what a generic, non flat s gives.  Asaeda-Haagerup is")
-    print("  4-supertransitive, so it agrees with Catalan through n = 4 too;")
-    print("  the two separate at n = 5, where A_infinity gives exactly 42 and")
-    print("  Asaeda-Haagerup strictly more.  Only that row distinguishes them.")
+    print("  is one of the classified alternatives at this index. Asaeda-Haagerup")
+    print("  is 5-supertransitive, so it agrees with Catalan through n = 5;")
+    print("  the first difference is at n = 6: 132 for A_infinity, 133 for AH.")
+    print("  Floating-point dimensions are evidence, not exact certificates.")
     print("  The walks column counts closed walks of length 2n at A in the")
     print("  initial graph, for scale.  The margin is the largest discarded")
     print("  principal angle cosine against the smallest kept one; the cut is")
@@ -371,8 +372,8 @@ def main():
         previous = dim
         flat = closed_walks(EDGES_TOP, "A", 2 * n)
         mark = ""
-        if n >= 5:
-            mark = "  <- A_infinity" if dim == catalan(n) else "  <- branches"
+        if n >= 6:
+            mark = "  <- TLJ-compatible numerically" if dim == catalan(n) else "  <- branching candidate"
         lo, hi = getattr(lv, "_last_angle_gap", (0.0, 1.0))
         info = getattr(lv, "_last_intersection", {})
         how = info.get("method", "-")
@@ -383,10 +384,10 @@ def main():
               f"  {elapsed:7.1f}s  {how}{mark}")
         del lv
 
-    if MAX_N < 5:
+    if MAX_N < 6:
         print()
-        print("  MAX_N < 5, so nothing above separates A_infinity from Asaeda-")
-        print("  Haagerup; raise MAX_N to 5 for the row that does.")
+        print("  MAX_N < 6, so nothing above separates A_infinity from Asaeda-")
+        print("  Haagerup; raise MAX_N to 6 for the first distinguishing row.")
 
     print("\ndone.")
 
