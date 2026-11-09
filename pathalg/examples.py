@@ -17,6 +17,7 @@ __all__ = [
     "dynkin_A",
     "dynkin",
     "fourier_matrix",
+    "f4_family",
     "hadamard",
 ]
 
@@ -100,6 +101,34 @@ def fourier_matrix(N):
     """The ``N x N`` Fourier matrix, a complex Hadamard matrix."""
     w = sp.exp(2 * sp.pi * sp.I / sp.Integer(N))
     return sp.Matrix(N, N, lambda j, k: sp.expand_complex(sp.simplify(w ** (j * k))))
+
+
+def f4_family(a):
+    """The one-parameter family ``F_4^(1)(a)`` of ``4 x 4`` complex Hadamard matrices.
+
+    With ``q = i e^{ia}``,
+
+        [ 1   1   1   1 ]
+        [ 1   q  -1  -q ]
+        [ 1  -1   1  -1 ]
+        [ 1  -q  -1   q ]
+
+    Haagerup showed every ``4 x 4`` complex Hadamard matrix is equivalent to one
+    of these.  ``a = 0`` is the Fourier matrix ``F_4`` and ``a = pi/2`` is
+    ``F_2 (x) F_2``; since ``q``, ``-q`` and ``conj(q)`` give equivalent
+    matrices, ``0 <= a <= pi/2`` already covers everything.  The matrix is
+    symmetric, so the two ways of reading the commuting square agree.
+    """
+    # a single exp atom, for the reason given in dynkin() above
+    q = sp.exp(sp.I * (a + sp.pi / 2))
+    return sp.Matrix(
+        [
+            [1, 1, 1, 1],
+            [1, q, -1, -q],
+            [1, -1, 1, -1],
+            [1, -q, -1, q],
+        ]
+    )
 
 
 def hadamard(H, **kwargs):

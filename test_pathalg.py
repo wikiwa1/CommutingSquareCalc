@@ -12,6 +12,8 @@ The interesting tests are the ones with an *external* answer:
 * ``test_hadamard_higher_relative_commutants`` -- the spin model of the Fourier
   matrix ``F_N`` is the ``Z/N`` group-subfactor commuting square, whose higher
   relative commutants have dimensions ``1, N, N^2, ...``.
+* ``test_f4_family_relative_commutants`` -- the ``4 x 4`` Hadamard family agrees
+  with a count that uses no path algebra, the multiplicity of 1 in ``T_p``.
 * ``test_dynkin_higher_relative_commutants`` -- for the flat ``A_n``
   connection, ``dim A_{0,1}' cap A_{n,0}`` is the number of closed walks of
   length ``2n`` at the endpoint of the Dynkin diagram.
@@ -30,7 +32,13 @@ import traceback
 import sympy as sp
 
 from pathalg import CommutingSquare, Level, Op, pf_bipartite
-from pathalg.examples import dynkin_A, fourier_matrix, hadamard, path_graph_bipartition
+from pathalg.examples import (
+    dynkin_A,
+    f4_family,
+    fourier_matrix,
+    hadamard,
+    path_graph_bipartition,
+)
 
 SLOW = "--slow" in sys.argv
 
@@ -300,6 +308,37 @@ def test_hadamard_higher_relative_commutants():
             check(got == want, f"F_{N} n={n}: got dim {got}, expected {want}")
 
 
+def test_f4_family_relative_commutants():
+    """F_4^(1)(a) follows D_(m+2)^(1), and T_p counts the same with no path algebra."""
+    import numpy as np
+
+    import hadamard4_demo
+
+    levels = [1, 2, 3, 4]
+    cases = (
+        (sp.Integer(0), [1, 4, 16, 64]),      # F_4
+        (sp.pi / 2, [1, 4, 16, 64]),          # F_2 (x) F_2
+        (sp.pi / 4, [1, 3, 10, 36]),          # m = 4: the second fork is reached
+        (sp.pi / 3, [1, 3, 10, 35]),          # m = 6: not yet
+        (sp.Integer(1), [1, 3, 10, 35]),      # D_infinity
+    )
+    for a, want in cases:
+        H = f4_family(a)
+        check(H == H.T, f"a={a}: the family is meant to be symmetric")
+        sq = hadamard(H, backend="numpy")
+        check(all(sq.verify(verbose=False)), f"a={a}: not bi-unitary")
+        got = [Level(sq, n).relative_commutant_dimension((0, 1), (n, 0)) for n in levels]
+        check(got == want, f"a={a}: got {got}, expected {want}")
+        check(hadamard4_demo.predicted_dims(a, levels) == want, f"a={a}: wrong graph")
+        direct = hadamard4_demo.fixed_points(
+            np.array(H.evalf(30).tolist(), dtype=complex), len(levels)
+        )
+        check(direct == want, f"a={a}: T_p gives {direct}, expected {want}")
+
+        dual = [Level(sq, n).relative_commutant_dimension((1, 1), (n, 0)) for n in levels[1:]]
+        check(dual == want[:-1], f"a={a}: dual side {dual}, expected {want[:-1]}")
+
+
 def _closed_walks(adj, vertex, length):
     return (adj ** length)[vertex, vertex]
 
@@ -411,11 +450,10 @@ def test_intersection_routes_agree():
 
 
 def test_asaeda_haagerup_sequence():
-    """The S1122 connection at a generic s gives A_infinity: 1, 2, 5, 14, ...
+    """Check the Catalan prefix at s=pi/3, without classifying its depth.
 
-    The connection is bi-unitary for every s but flat only at finitely many, so
-    the generic answer is the Catalan sequence.  Anything else at these n would
-    mean either a special s or a bug.
+    Asaeda-Haagerup is 5-supertransitive, so levels 1 through 5 do not
+    distinguish it from A_infinity. The first distinction is at level 6.
     """
     import ah_demo
 
@@ -659,6 +697,7 @@ TESTS = [
     test_jones_projection_trace,
     test_relative_commutant_matches_brute_force,
     test_hadamard_higher_relative_commutants,
+    test_f4_family_relative_commutants,
     test_dynkin_higher_relative_commutants,
     test_relative_commutant_is_exact_and_in_ambient,
     test_expectation_tower_is_consistent,
